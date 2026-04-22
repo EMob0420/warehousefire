@@ -155,6 +155,12 @@ footer a{color:var(--accent);text-decoration:none}
   <select id="f-year"><option value="">All Years</option><option>2002</option><option>2005</option><option>2006</option><option>2007</option><option>2008</option><option>2009</option><option>2010</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
   <label>Size</label>
   <select id="f-sqft"><option value="">All Sizes</option><option value="small">Under 10K sq ft</option><option value="medium">10K–50K sq ft</option><option value="large">50K–200K sq ft</option><option value="mega">200K+ sq ft</option></select>
+  <label>Type</label>
+  <div style="display:flex;gap:.25rem">
+    <button class="legend-toggle-btn active" id="f-btype-all">All</button>
+    <button class="legend-toggle-btn" id="f-btype-warehouse">Warehouses</button>
+    <button class="legend-toggle-btn" id="f-btype-building">Buildings</button>
+  </div>
   <input type="search" id="f-search" placeholder="City or address…">
   <button class="action-btn" id="btn-reset">Reset</button>
   <button class="action-btn primary" id="btn-export">Export CSV</button>
@@ -179,6 +185,10 @@ footer a{color:var(--accent);text-decoration:none}
       <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Building</div>
       <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Outside</div>
       <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Other</div>
+    </div>
+    <div style="display:flex;gap:.75rem;align-items:center;flex-shrink:0">
+      <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><circle cx="5" cy="5" r="4" fill="#71717a" fill-opacity=".8"/></svg>Warehouse</div>
+      <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><rect x="1" y="1" width="8" height="8" rx="2" fill="#71717a" fill-opacity=".8"/></svg>Building</div>
     </div>
     <div class="legend-toggle">
       <span style="font-size:.65rem;color:var(--text3);font-weight:700">Color</span>
@@ -332,7 +342,8 @@ const cColors={'Los Angeles':'#f43f5e','San Bernardino':'#fb923c','Riverside':'#
 const cTag={'Los Angeles':'tag-la','San Bernardino':'tag-sb','Riverside':'tag-rv','Orange':'tag-oc'};
 
 // ============== STATE ==============
-const AppState={tab:'fires',nf:{county:'',type:'',year:'',search:'',sqft:''},sort:{col:'dt',dir:-1}};
+const AppState={tab:'fires',nf:{county:'',type:'',year:'',search:'',sqft:'',btype:''},sort:{col:'dt',dir:-1}};
+function isWH(d){return d.sqft>=10000;}
 
 function filterData(){
   let d=NFIRS_DATA;const f=AppState.nf;
@@ -349,6 +360,8 @@ function filterData(){
     else if(f.sqft==='large')d=d.filter(r=>r.sqft>=50000&&r.sqft<200000);
     else if(f.sqft==='mega')d=d.filter(r=>r.sqft>=200000);
   }
+  if(f.btype==='warehouse')d=d.filter(r=>isWH(r));
+  else if(f.btype==='building')d=d.filter(r=>!isWH(r));
   if(f.search){const s=f.search.toUpperCase();d=d.filter(r=>(r.ci+' '+r.addr+' '+r.ty).toUpperCase().includes(s))}
   const so=AppState.sort;
   d=[...d].sort((a,b)=>{const av=a[so.col],bv=b[so.col];return(av<bv?-1:av>bv?1:0)*so.dir});
@@ -519,14 +532,14 @@ function makeIcon(county,size,loss,tc,cause,sqft){
   const isWarehouse=sqft>=10000;
   let shape,glow='';
   if(loss>500000) glow=isWarehouse
-    ?`<rect x="${cx-r-3}" y="${cy-r-3}" width="${(r+3)*2}" height="${(r+3)*2}" rx="3" fill="${c}" fill-opacity=".18"/>`
-    :`<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="${c}" fill-opacity=".18"/>`;
+    ?`<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="${c}" fill-opacity=".18"/>`
+    :`<rect x="${cx-r-3}" y="${cy-r-3}" width="${(r+3)*2}" height="${(r+3)*2}" rx="3" fill="${c}" fill-opacity=".18"/>`;
   if(isWarehouse){
-    // Square/rounded-rect = warehouse-scale (sqft ≥ 10,000)
-    shape=`<rect x="${cx-r}" y="${cy-r}" width="${r*2}" height="${r*2}" rx="2" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}"/>`;
+    // Circle = warehouse (sqft ≥ 10,000)
+    shape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}"/>`;
   } else {
-    // Circle = smaller building fire
-    shape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}" stroke-dasharray="${loss===0?'3,2':'none'}"/>`;
+    // Rounded rect = building fire
+    shape=`<rect x="${cx-r}" y="${cy-r}" width="${r*2}" height="${r*2}" rx="2" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}" stroke-dasharray="${loss===0?'3,2':'none'}"/>`;
   }
   return L.divIcon({className:'',iconSize:[W,W],iconAnchor:[cx,cy],
     html:`<svg width="${W}" height="${W}" style="overflow:visible">${glow}${shape}</svg>`
@@ -618,8 +631,9 @@ function renderStats(data){
     const loss=data.reduce((s,d)=>s+d.pl,0);
     const arson=data.filter(d=>d.cause==='Intentional (Arson)').length;
     const inj=data.reduce((s,d)=>s+d.ffi+d.cvi,0);const deaths=data.reduce((s,d)=>s+d.ffd+d.cvd,0);
-    add('Structure Fires',data.length.toLocaleString(),'PUC 891 + INC 111');
-    add('Arson Cases',arson.toLocaleString(),'intentional ignition');
+    const wh=data.filter(isWH).length;const bld=data.filter(d=>!isWH(d)).length;
+    add('Warehouse Fires',wh.toLocaleString(),'● sqft ≥ 10,000 / PUC 891');
+    add('Building Fires',bld.toLocaleString(),'▪ all other structures');
     add('Property Loss','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage');
     add('Injuries / Deaths',inj+' / '+deaths,'reported casualties');
     add('Cities',new Set(data.map(d=>d.ci)).size,'unique locations');
@@ -729,10 +743,13 @@ document.getElementById('color-type').addEventListener('click',()=>setColorMode(
 document.getElementById('f-county').addEventListener('change',e=>{AppState.nf.county=e.target.value;render()});
 document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year=e.target.value;syncImageryToYear(e.target.value);render()});
 document.getElementById('f-sqft').addEventListener('change',e=>{AppState.nf.sqft=e.target.value;render()});
+['all','warehouse','building'].forEach(v=>{document.getElementById('f-btype-'+v).addEventListener('click',()=>{AppState.nf.btype=v==='all'?'':v;['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k===v));render();});});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
-document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',sqft:''};
+document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',sqft:'',btype:''};
   document.getElementById('f-county').value='';document.getElementById('f-sqft').value='';
-  document.getElementById('f-year').value='';document.getElementById('f-search').value='';syncImageryToYear('');render()});
+  document.getElementById('f-year').value='';document.getElementById('f-search').value='';
+  ['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k==='all'));
+  syncImageryToYear('');render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
   const data=filterData();const hdr='date,city,county,type,address,zip,property_loss,contents_loss\n';
   const rows=data.map(d=>[d.dt,'"'+d.ci+'"',d.co,'"'+normType(d.tc)+'"','"'+d.addr+'"',d.zip,d.pl,d.cl].join(',')).join('\n');
