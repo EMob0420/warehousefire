@@ -90,7 +90,18 @@ td{padding:.45rem .6rem;color:var(--text2)}
 .popup-title{font-weight:700;font-size:1rem;margin:.15rem 0}
 .popup-detail{font-size:.85rem;color:var(--text2)}
 .popup-loss{font-family:'Space Mono',monospace;font-size:.95rem;color:var(--accent);margin-top:.25rem}
-.custom-cluster{background:rgba(244,63,94,.8);border:2px solid rgba(244,63,94,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:white;font-family:'Space Mono',monospace}
+.popup-news{margin-top:.4rem;padding-top:.35rem;border-top:1px solid rgba(63,63,70,.5)}
+.popup-news a{font-size:.78rem;color:#fb923c;text-decoration:none;line-height:1.4;display:block}
+.popup-news a:hover{text-decoration:underline}
+.popup-news-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:#71717a;margin-bottom:.15rem;font-weight:600}
+.legend-toggle{display:flex;align-items:center;gap:.4rem;margin-left:auto}
+.legend-toggle-btn{padding:.25rem .7rem;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
+.legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
+.marker-cluster,.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background:transparent!important;border:none!important;box-shadow:none!important}
+.marker-cluster div,.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:transparent!important;border:none!important;box-shadow:none!important}
+.base-toggle-btn{background:rgba(9,9,11,.82);color:#a1a1aa;border:1px solid #3f3f46;border-radius:5px;padding:5px 10px;font-size:.78rem;font-family:'Space Mono',monospace;cursor:pointer;transition:all .15s;white-space:nowrap}
+.base-toggle-btn:hover{color:#fafafa;border-color:#71717a}
+#img-info{position:absolute;bottom:28px;left:8px;z-index:800;background:rgba(9,9,11,.8);color:#71717a;padding:3px 8px;border-radius:4px;font-size:.7rem;font-family:'Space Mono',monospace;pointer-events:none;display:none}
 footer{text-align:center;padding:1.5rem 0 1rem;color:var(--text3);font-size:.8rem;border-top:1px solid var(--border);margin-top:2rem}
 footer a{color:var(--accent);text-decoration:none}
 </style>
@@ -102,23 +113,45 @@ footer a{color:var(--accent);text-decoration:none}
     <img src="logo.png" alt="SoCal Earth - Pitzer College - Robert Redford Conservancy" style="height:60px;border-radius:6px;flex-shrink:0">
     <div class="hdr-left">
       <h1>SoCal Warehouse <span>Fire Explorer</span></h1>
-      <p>654 warehouse building fires (2005-2024) from NFIRS for Los Angeles, San Bernardino, Riverside & Orange County. Includes market vacancy data and major tenant locations.</p>
+      <p>654 warehouse building fires (2005-2024) from NFIRS — filtered to Property Use Code 891 (Warehouse) + Incident Type 111 (Building Fire). Excludes storage yard / outside fires. Includes market vacancy data and major tenant locations.</p>
     </div>
   </div>
   <div class="hdr-right" id="tabs"></div>
 </header>
 <div class="stats" id="stats"></div>
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:var(--la)"></div>Los Angeles</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--sb)"></div>San Bernardino</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--oc)"></div>Orange</div>
+<div class="legend" id="legend">
+  <div id="legend-cause" style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center">
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Arson</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>Equipment Failure</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Unintentional</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Under Investigation</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div>Undetermined</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Other / Nature</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3f3f46"></div>Unknown</div>
+  </div>
+  <div id="legend-county" style="display:none;gap:1.25rem;flex-wrap:wrap;align-items:center">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--la)"></div>Los Angeles</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--sb)"></div>San Bernardino</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--oc)"></div>Orange</div>
+  </div>
+  <div id="legend-type" style="display:none;gap:1.25rem;flex-wrap:wrap;align-items:center">
+    <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Building / Structure</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Outside / Storage</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Vehicle / Other</div>
+  </div>
+  <div class="legend-toggle">
+    <span style="font-size:.72rem;color:var(--text3);font-weight:600">Color by</span>
+    <button class="legend-toggle-btn active" id="color-cause">Cause</button>
+    <button class="legend-toggle-btn" id="color-county">County</button>
+    <button class="legend-toggle-btn" id="color-type">Fire Type</button>
+  </div>
 </div>
 
 <!-- WAREHOUSE FIRES TAB -->
 <div class="panel active" id="panel-fires">
   <div class="split">
-    <div class="map-pane"><div id="map"></div></div>
+    <div class="map-pane" style="position:relative"><div id="map"></div><div id="img-info"></div></div>
     <div class="sidebar">
       <div class="filter-panel">
         <h3>Filters</h3>
@@ -139,7 +172,29 @@ footer a{color:var(--accent);text-decoration:none}
           <div style="text-align:center"><svg width="22" height="22"><circle cx="11" cy="11" r="10" fill="var(--la)" fill-opacity=".85" stroke="#fff" stroke-width="1"/></svg><div style="font-size:.7rem;color:var(--text3)">$100K</div></div>
           <div style="text-align:center"><svg width="34" height="34"><circle cx="17" cy="17" r="15" fill="var(--la)" fill-opacity=".95" stroke="#fff" stroke-width="1.5"/></svg><div style="font-size:.7rem;color:var(--text3)">$1M+</div></div>
         </div>
+        <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px solid var(--border);display:flex;gap:1rem;align-items:center">
+          <div style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><svg width="12" height="12"><rect x="1" y="1" width="10" height="10" rx="1.5" fill="var(--text3)" fill-opacity=".7" stroke="#fff" stroke-width=".8"/></svg>Warehouse (≥10K sq ft)</div>
+          <div style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="var(--text3)" fill-opacity=".7" stroke="#fff" stroke-width=".8"/></svg>Building fire</div>
+        </div>
         <div style="margin-top:.4rem;color:var(--text3);font-size:.8rem">Click markers for details. Clusters expand on zoom.</div>
+      </div>
+      <div class="filter-panel" style="font-size:.78rem;line-height:1.55">
+        <h3>Data Scope</h3>
+        <div style="margin-top:.35rem">
+          <div style="color:var(--text2);margin-bottom:.4rem">Filtered from NFIRS using:</div>
+          <div style="display:flex;flex-direction:column;gap:.25rem">
+            <div><span style="font-family:'Space Mono',monospace;font-size:.72rem;background:rgba(251,146,60,.12);padding:.1rem .35rem;border-radius:3px;color:#fb923c">PUC = 891</span> <span style="color:var(--text2)">Warehouse property</span></div>
+            <div><span style="font-family:'Space Mono',monospace;font-size:.72rem;background:rgba(34,211,238,.1);padding:.1rem .35rem;border-radius:3px;color:#22d3ee">INC = 111</span> <span style="color:var(--text2)">Building fire only</span></div>
+          </div>
+        </div>
+        <div style="margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--border)">
+          <div style="color:var(--text3);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:.3rem">Excluded</div>
+          <div style="color:var(--text2)">Storage yard &amp; outside fires (NFIRS types 150–162) are <strong style="color:var(--text)">not included</strong> — only fires in enclosed warehouse structures qualify under INC 111.</div>
+        </div>
+        <div style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)">
+          <div style="color:var(--text3);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:.3rem">Coverage gap</div>
+          <div style="color:var(--text2)">Open-air pallet yards, loading dock yard fires, and outdoor storage compound fires are undercounted here. These appear in NFIRS as type 150–162 and would require a separate PUC+INC query to capture.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -296,26 +351,163 @@ function filterData(){
 
 // ============== MAP ==============
 const map=L.map('map',{center:[33.95,-117.75],zoom:9,zoomControl:true});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'OpenStreetMap, CARTO',maxZoom:19}).addTo(map);
+
+const ESRI_CURRENT='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const CARTO_DARK='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const WAYBACK_BASE='https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile';
+
+let baseTile=L.tileLayer(ESRI_CURRENT,{attribution:'Esri, Maxar, GeoEye, USGS',maxZoom:19}).addTo(map);
+let usingSatellite=true;
+
+// Satellite / Dark toggle
+const toggleCtrl=L.control({position:'bottomright'});
+toggleCtrl.onAdd=function(){
+  const btn=document.createElement('button');
+  btn.id='base-toggle';btn.className='base-toggle-btn';btn.textContent='Dark mode';
+  L.DomEvent.on(btn,'click',function(e){
+    L.DomEvent.stopPropagation(e);
+    usingSatellite=!usingSatellite;
+    if(usingSatellite){btn.textContent='Dark mode';syncImageryToYear(AppState.nf.year);}
+    else{baseTile.setUrl(CARTO_DARK);document.getElementById('img-info').style.display='none';btn.textContent='Satellite';}
+  });
+  return btn;
+};
+toggleCtrl.addTo(map);
+
+// Esri Wayback: fetch available releases (historical imagery snapshots)
+let waybackReleases=[];
+fetch('https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml')
+  .then(r=>r.text()).then(text=>{
+    const xml=new DOMParser().parseFromString(text,'text/xml');
+    xml.querySelectorAll('Contents Layer').forEach(layer=>{
+      const title=layer.querySelector('Title')?.textContent||'';
+      const dateMatch=title.match(/(\d{4}-\d{2}-\d{2})/);
+      if(!dateMatch) return;
+      const dateStr=dateMatch[1];const year=parseInt(dateStr.slice(0,4));
+      const tmpl=layer.querySelector('ResourceURL')?.getAttribute('template')||'';
+      const idMatch=tmpl.match(/MapServer\/tile\/(\d+)\//);
+      if(!idMatch) return;
+      waybackReleases.push({releaseId:parseInt(idMatch[1]),year,dateStr});
+    });
+    waybackReleases.sort((a,b)=>b.releaseId-a.releaseId);
+    if(AppState.nf.year&&usingSatellite) syncImageryToYear(AppState.nf.year);
+  }).catch(()=>{});
+
+function getBestRelease(targetYear){
+  if(!waybackReleases.length) return null;
+  const same=waybackReleases.filter(r=>r.year===targetYear);
+  if(same.length) return same[0];
+  let best=null,bestDiff=Infinity;
+  waybackReleases.forEach(r=>{const d=Math.abs(r.year-targetYear);if(d<bestDiff){bestDiff=d;best=r;}});
+  return best;
+}
+
+function syncImageryToYear(year){
+  if(!usingSatellite) return;
+  const infoEl=document.getElementById('img-info');
+  if(!year){
+    baseTile.setUrl(ESRI_CURRENT);
+    if(infoEl){infoEl.textContent='';infoEl.style.display='none';}
+    return;
+  }
+  const release=getBestRelease(parseInt(year));
+  if(release){
+    baseTile.setUrl(WAYBACK_BASE+'/'+release.releaseId+'/{z}/{y}/{x}');
+    if(infoEl){infoEl.textContent='Imagery: ~'+release.dateStr;infoEl.style.display='block';}
+  } else {
+    baseTile.setUrl(ESRI_CURRENT);
+    if(infoEl){infoEl.textContent='';infoEl.style.display='none';}
+  }
+}
+
+// ============== COLOR MODE ==============
+let colorMode='cause';
+const typeColors={building:'#f97316',outside:'#a855f7',other:'#60a5fa'};
+const causeColors={arson:'#ef4444',equipment:'#eab308',unintentional:'#22d3ee',investigating:'#94a3b8',undetermined:'#6b7280',other:'#a855f7',unknown:'#3f3f46'};
+function getFireCat(tc){
+  if(['111','112','115'].includes(tc)) return 'building';
+  if(['118','150','151','152','154','155','160','161','162'].includes(tc)) return 'outside';
+  return 'other';
+}
+function normCause(cause){
+  if(!cause||cause==='') return 'unknown';
+  if(cause==='Intentional (Arson)') return 'arson';
+  if(cause==='Equipment Failure') return 'equipment';
+  if(cause==='Unintentional') return 'unintentional';
+  if(cause==='Under Investigation') return 'investigating';
+  if(cause==='Undetermined') return 'undetermined';
+  return 'other';
+}
+function makePieCluster(count,counts){
+  const size=count>99?54:count>9?46:38;
+  const r=size/2-3;const cx=size/2,cy=size/2;
+  const entries=Object.entries(counts).filter(([,v])=>v>0);
+  let svg=`<svg width="${size}" height="${size}" style="filter:drop-shadow(0 1px 4px rgba(0,0,0,.7))">`;
+  if(entries.length===1){
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${causeColors[entries[0][0]]||'#888'}"/>`;
+  } else {
+    let a=-Math.PI/2;
+    entries.forEach(([cat,cnt])=>{
+      const sweep=(cnt/count)*2*Math.PI;
+      const ea=a+sweep;
+      const x1=(cx+r*Math.cos(a)).toFixed(2),y1=(cy+r*Math.sin(a)).toFixed(2);
+      const x2=(cx+r*Math.cos(ea)).toFixed(2),y2=(cy+r*Math.sin(ea)).toFixed(2);
+      svg+=`<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${sweep>Math.PI?1:0},1 ${x2},${y2} Z" fill="${causeColors[cat]||'#888'}"/>`;
+      a=ea;
+    });
+  }
+  const ir=r*0.42;
+  svg+=`<circle cx="${cx}" cy="${cy}" r="${ir}" fill="rgba(9,9,11,.88)"/>`;
+  svg+=`<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${count>99?9:10}" font-weight="700" font-family="Space Mono,monospace">${count}</text>`;
+  svg+='</svg>';
+  return L.divIcon({html:svg,className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]});
+}
+
+// ============== NEWS DB ==============
+// Keyed by "YYYY-MM-DD|CITY" matching NFIRS dt + ci fields
+const NEWS_DB={
+  '2020-06-02|REDLANDS':{headline:'Amazon 600K sq ft distribution center destroyed; roof collapsed',source:'ABC7',url:'https://abc7.com/post/three-alarm-fire-erupts-at-distribution-facility-in-redlands/6233005/'},
+  '2016-06-14|MAYWOOD':{headline:'Magnesium warehouse fire causes explosions and power outages',source:'KTLA',url:'https://ktla.com/news/local-news/magnesium-fueled-warehouse-fire-in-maywood-causes-explosions-power-outages/'},
+  '2014-10-05|SANTA FE SPRINGS':{headline:'Four-alarm warehouse fire damages 5 buildings, multiple explosions',source:'KTLA',url:'https://ktla.com/news/local-news/santa-fe-springs-streets-closed-after-fire-erupts-in-warehouse/'},
+  '2023-05-05|COMMERCE':{headline:'Three-alarm furniture warehouse fire; roof collapse; 100+ firefighters',source:'ABC7',url:'https://abc7.com/commerce-fire-building-structure/13214769/'},
+  '2020-05-16|LOS ANGELES':{headline:'Warehouse explosions injure 12+ firefighters (butane canisters, Downtown LA)',source:'KTLA',url:'https://ktla.com/news/local-news/explosions-rip-through-los-angeles-warehouse/'},
+  '2024-12-08|SOUTH EL MONTE':{headline:'Two-alarm Amazon warehouse fire; roof collapsed; lithium-ion batteries',source:'NBC LA',url:'https://www.nbclosangeles.com/news/local/el-monte-amazon-warehouse-fire/3577475/'},
+};
 
 function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(44,Math.max(10,6+Math.log10(pl)*6.5)))}
-function makeIcon(county,size,loss){
-  const c=cColors[county]||'#888';
+function makeIcon(county,size,loss,tc,cause,sqft){
+  const c=colorMode==='cause'?(causeColors[normCause(cause)]||'#888'):colorMode==='type'?(typeColors[getFireCat(tc)]||'#888'):(cColors[county]||'#888');
   const op=loss>100000?'.95':loss>10000?'.85':'.65';
-  const glow=loss>500000?'<circle cx="'+(size/2+4)+'" cy="'+(size/2+4)+'" r="'+(size/2+3)+'" fill="'+c+'" fill-opacity=".2"/>':'';
-  return L.divIcon({className:'',iconSize:[size,size],iconAnchor:[size/2,size/2],
-    html:'<svg width="'+(size+8)+'" height="'+(size+8)+'" style="margin:-4px">'+glow+'<circle cx="'+(size/2+4)+'" cy="'+(size/2+4)+'" r="'+(size/2-1)+'" fill="'+c+'" fill-opacity="'+op+'" stroke="#fff" stroke-width="'+(loss>100000?'1.5':'0.8')+'"/></svg>'
+  const sw=loss>100000?'1.5':'0.8';
+  const pad=4;const W=size+pad*2;const cx=W/2,cy=W/2;const r=size/2-1;
+  const isWarehouse=sqft>=10000;
+  let shape,glow='';
+  if(loss>500000) glow=isWarehouse
+    ?`<rect x="${cx-r-3}" y="${cy-r-3}" width="${(r+3)*2}" height="${(r+3)*2}" rx="3" fill="${c}" fill-opacity=".18"/>`
+    :`<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="${c}" fill-opacity=".18"/>`;
+  if(isWarehouse){
+    // Square/rounded-rect = warehouse-scale (sqft ≥ 10,000)
+    shape=`<rect x="${cx-r}" y="${cy-r}" width="${r*2}" height="${r*2}" rx="2" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}"/>`;
+  } else {
+    // Circle = smaller building fire
+    shape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}" stroke-dasharray="${loss===0?'3,2':'none'}"/>`;
+  }
+  return L.divIcon({className:'',iconSize:[W,W],iconAnchor:[cx,cy],
+    html:`<svg width="${W}" height="${W}" style="overflow:visible">${glow}${shape}</svg>`
   });
 }
 const cluster=L.markerClusterGroup({maxClusterRadius:45,iconCreateFunction:function(cl){
-  return L.divIcon({html:'<div class="custom-cluster">'+cl.getChildCount()+'</div>',className:'',iconSize:[34,34]});
+  const markers=cl.getAllChildMarkers();
+  const counts={};
+  markers.forEach(m=>{const ck=m.options.causeKey||'unknown';counts[ck]=(counts[ck]||0)+1;});
+  return makePieCluster(cl.getChildCount(),counts);
 }});
 
 function buildMarkers(data){
   cluster.clearLayers();
   data.forEach(d=>{
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
-    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl)});
+    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc,d.cause,d.sqft),causeKey:normCause(d.cause)});
     const pop=document.createElement('div');
     const pt=document.createElement('div');pt.className='popup-type';pt.textContent=normType(d.tc);pop.appendChild(pt);
     const ptl=document.createElement('div');ptl.className='popup-title';ptl.textContent=d.addr||'(no address)';pop.appendChild(ptl);
@@ -326,7 +518,18 @@ function buildMarkers(data){
     const pl=document.createElement('div');pl.className='popup-loss';
     pl.textContent=d.pl>0?'Loss: $'+d.pl.toLocaleString():'No loss reported';
     if(d.pl<=0)pl.style.color='var(--text3)';pop.appendChild(pl);
-    m.bindPopup(pop);cluster.addLayer(m);
+    const newsItem=NEWS_DB[d.dt+'|'+d.ci];
+    if(newsItem){
+      const pn=document.createElement('div');pn.className='popup-news';
+      const nlbl=document.createElement('div');nlbl.className='popup-news-label';nlbl.textContent='In the News';pn.appendChild(nlbl);
+      const na=document.createElement('a');na.href=newsItem.url;na.target='_blank';na.rel='noopener noreferrer';
+      na.textContent=newsItem.headline+' — '+newsItem.source;pn.appendChild(na);
+      pop.appendChild(pn);
+    }
+    m.bindPopup(pop);
+    m.on('popupopen',()=>syncImageryToYear(String(d.yr)));
+    m.on('popupclose',()=>{if(!AppState.nf.year)syncImageryToYear('');});
+    cluster.addLayer(m);
   });
   map.addLayer(cluster);
 }
@@ -436,13 +639,28 @@ const tabsEl=document.getElementById('tabs');
 });
 
 // ============== FILTERS ==============
+// ============== COLOR BY TOGGLE ==============
+function setColorMode(mode){
+  colorMode=mode;
+  ['cause','county','type'].forEach(m=>{
+    const btn=document.getElementById('color-'+m);
+    const leg=document.getElementById('legend-'+m);
+    if(btn) btn.classList.toggle('active',m===mode);
+    if(leg) leg.style.display=m===mode?'flex':'none';
+  });
+  render();
+}
+document.getElementById('color-cause').addEventListener('click',()=>setColorMode('cause'));
+document.getElementById('color-county').addEventListener('click',()=>setColorMode('county'));
+document.getElementById('color-type').addEventListener('click',()=>setColorMode('type'));
+
 document.getElementById('f-county').addEventListener('change',e=>{AppState.nf.county=e.target.value;render()});
-document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year=e.target.value;render()});
+document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year=e.target.value;syncImageryToYear(e.target.value);render()});
 document.getElementById('f-sqft').addEventListener('change',e=>{AppState.nf.sqft=e.target.value;render()});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
 document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',sqft:''};
   document.getElementById('f-county').value='';document.getElementById('f-sqft').value='';
-  document.getElementById('f-year').value='';document.getElementById('f-search').value='';render()});
+  document.getElementById('f-year').value='';document.getElementById('f-search').value='';syncImageryToYear('');render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
   const data=filterData();const hdr='date,city,county,type,address,zip,property_loss,contents_loss\n';
   const rows=data.map(d=>[d.dt,'"'+d.ci+'"',d.co,'"'+normType(d.tc)+'"','"'+d.addr+'"',d.zip,d.pl,d.cl].join(',')).join('\n');
