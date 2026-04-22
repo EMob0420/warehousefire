@@ -30,6 +30,10 @@ header{padding-bottom:1.1rem;border-bottom:1px solid var(--border);margin-bottom
 .hero-top h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .hero-tagline{font-size:1.125rem;color:var(--text2);font-weight:400;line-height:1.5;margin-bottom:.7rem;text-align:center}
 .hero-tagline strong{color:var(--text)}
+.hero-explainer{max-width:800px;margin:0 auto .9rem;text-align:center}
+.hero-explainer p{font-size:.94rem;color:var(--text3);line-height:1.65;margin:0 0 .55rem}
+.hero-explainer p:last-child{margin-bottom:0}
+.stats-divider{border:none;border-top:1px solid var(--border);margin:.85rem 0}
 /* stat pills in header */
 .stats{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;justify-content:center}
 .stat{display:flex;flex-direction:column;gap:.05rem}
@@ -151,7 +155,11 @@ footer a{color:var(--accent);text-decoration:none}
     <h1>SoCal Warehouse <span>Fire Explorer</span></h1>
   </div>
   <p class="hero-tagline"><strong>654 structure fires including warehouses, commercial buildings, and industrial facilities</strong> across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024.</p>
-  <p style="font-size:.85rem;color:var(--text3);margin-bottom:.7rem;max-width:680px;line-height:1.5">Fires are color-coded by cause. Marker size reflects property loss. Use the filters to explore by county, year, or building size.</p>
+  <div class="hero-explainer">
+    <p>This tool maps structure fires reported to FEMA's National Fire Incident Reporting System (NFIRS) across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024. Use the filters to explore fires by county, year, building size, or cause.</p>
+    <p>Fires are categorized as <strong style="color:var(--text2)">Warehouse fires</strong> (properties classified as PUC 891 or buildings ≥10,000 sq ft) or <strong style="color:var(--text2)">Building fires</strong> (all other commercial and industrial structures). While FEMA does not separately track warehouse fires, buildings over 10,000 sq ft in these counties are reasonably assumed to include warehouse and distribution center use.</p>
+  </div>
+  <hr class="stats-divider">
   <div class="stats" id="stats"></div>
 </header>
 
