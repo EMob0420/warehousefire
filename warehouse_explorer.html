@@ -113,7 +113,7 @@ footer a{color:var(--accent);text-decoration:none}
     <img src="logo.png" alt="SoCal Earth - Pitzer College - Robert Redford Conservancy" style="height:60px;border-radius:6px;flex-shrink:0">
     <div class="hdr-left">
       <h1>SoCal Warehouse <span>Fire Explorer</span></h1>
-      <p>654 warehouse building fires (2005-2024) from NFIRS for Los Angeles, San Bernardino, Riverside & Orange County. Includes market vacancy data and major tenant locations.</p>
+      <p>654 warehouse building fires (2005-2024) from NFIRS — filtered to Property Use Code 891 (Warehouse) + Incident Type 111 (Building Fire). Excludes storage yard / outside fires. Includes market vacancy data and major tenant locations.</p>
     </div>
   </div>
   <div class="hdr-right" id="tabs"></div>
@@ -173,6 +173,24 @@ footer a{color:var(--accent);text-decoration:none}
           <div style="text-align:center"><svg width="34" height="34"><circle cx="17" cy="17" r="15" fill="var(--la)" fill-opacity=".95" stroke="#fff" stroke-width="1.5"/></svg><div style="font-size:.7rem;color:var(--text3)">$1M+</div></div>
         </div>
         <div style="margin-top:.4rem;color:var(--text3);font-size:.8rem">Click markers for details. Clusters expand on zoom.</div>
+      </div>
+      <div class="filter-panel" style="font-size:.78rem;line-height:1.55">
+        <h3>Data Scope</h3>
+        <div style="margin-top:.35rem">
+          <div style="color:var(--text2);margin-bottom:.4rem">Filtered from NFIRS using:</div>
+          <div style="display:flex;flex-direction:column;gap:.25rem">
+            <div><span style="font-family:'Space Mono',monospace;font-size:.72rem;background:var(--surface2);padding:.1rem .35rem;border-radius:3px;color:var(--accent2)">PUC = 891</span> <span style="color:var(--text2)">Warehouse property</span></div>
+            <div><span style="font-family:'Space Mono',monospace;font-size:.72rem;background:var(--surface2);padding:.1rem .35rem;border-radius:3px;color:var(--accent2)">INC = 111</span> <span style="color:var(--text2)">Building fire only</span></div>
+          </div>
+        </div>
+        <div style="margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--border)">
+          <div style="color:var(--text3);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:.3rem">Excluded</div>
+          <div style="color:var(--text2)">Storage yard &amp; outside fires (NFIRS types 150–162) are <strong style="color:var(--text)">not included</strong> — only fires in enclosed warehouse structures qualify under INC 111.</div>
+        </div>
+        <div style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)">
+          <div style="color:var(--text3);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:.3rem">Coverage gap</div>
+          <div style="color:var(--text2)">Open-air pallet yards, loading dock yard fires, and outdoor storage compound fires are undercounted here. These appear in NFIRS as type 150–162 and would require a separate PUC+INC query to capture.</div>
+        </div>
       </div>
     </div>
   </div>
