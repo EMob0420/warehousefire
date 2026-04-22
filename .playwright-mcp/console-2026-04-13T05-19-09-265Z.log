@@ -1,0 +1,2 @@
+[    3010ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://socal-warehouse-fires.vercel.app/favicon.ico:0
+[  137249ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ :0
