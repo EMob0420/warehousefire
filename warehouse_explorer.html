@@ -119,7 +119,16 @@ footer a{color:var(--accent);text-decoration:none}
 </header>
 <div class="stats" id="stats"></div>
 <div class="legend" id="legend">
-  <div id="legend-county" style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center">
+  <div id="legend-cause" style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center">
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Arson</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>Equipment Failure</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Unintentional</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Under Investigation</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div>Undetermined</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Other / Nature</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3f3f46"></div>Unknown</div>
+  </div>
+  <div id="legend-county" style="display:none;gap:1.25rem;flex-wrap:wrap;align-items:center">
     <div class="legend-item"><div class="legend-dot" style="background:var(--la)"></div>Los Angeles</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--sb)"></div>San Bernardino</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
@@ -132,7 +141,8 @@ footer a{color:var(--accent);text-decoration:none}
   </div>
   <div class="legend-toggle">
     <span style="font-size:.72rem;color:var(--text3);font-weight:600">Color by</span>
-    <button class="legend-toggle-btn active" id="color-county">County</button>
+    <button class="legend-toggle-btn active" id="color-cause">Cause</button>
+    <button class="legend-toggle-btn" id="color-county">County</button>
     <button class="legend-toggle-btn" id="color-type">Fire Type</button>
   </div>
 </div>
@@ -388,12 +398,46 @@ function syncImageryToYear(year){
 }
 
 // ============== COLOR MODE ==============
-let colorMode='county';
+let colorMode='cause';
 const typeColors={building:'#f97316',outside:'#a855f7',other:'#60a5fa'};
+const causeColors={arson:'#ef4444',equipment:'#eab308',unintentional:'#22d3ee',investigating:'#94a3b8',undetermined:'#6b7280',other:'#a855f7',unknown:'#3f3f46'};
 function getFireCat(tc){
   if(['111','112','115'].includes(tc)) return 'building';
   if(['118','150','151','152','154','155','160','161','162'].includes(tc)) return 'outside';
   return 'other';
+}
+function normCause(cause){
+  if(!cause||cause==='') return 'unknown';
+  if(cause==='Intentional (Arson)') return 'arson';
+  if(cause==='Equipment Failure') return 'equipment';
+  if(cause==='Unintentional') return 'unintentional';
+  if(cause==='Under Investigation') return 'investigating';
+  if(cause==='Undetermined') return 'undetermined';
+  return 'other';
+}
+function makePieCluster(count,counts){
+  const size=count>99?54:count>9?46:38;
+  const r=size/2-3;const cx=size/2,cy=size/2;
+  const entries=Object.entries(counts).filter(([,v])=>v>0);
+  let svg=`<svg width="${size}" height="${size}" style="filter:drop-shadow(0 1px 4px rgba(0,0,0,.7))">`;
+  if(entries.length===1){
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${causeColors[entries[0][0]]||'#888'}"/>`;
+  } else {
+    let a=-Math.PI/2;
+    entries.forEach(([cat,cnt])=>{
+      const sweep=(cnt/count)*2*Math.PI;
+      const ea=a+sweep;
+      const x1=(cx+r*Math.cos(a)).toFixed(2),y1=(cy+r*Math.sin(a)).toFixed(2);
+      const x2=(cx+r*Math.cos(ea)).toFixed(2),y2=(cy+r*Math.sin(ea)).toFixed(2);
+      svg+=`<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${sweep>Math.PI?1:0},1 ${x2},${y2} Z" fill="${causeColors[cat]||'#888'}"/>`;
+      a=ea;
+    });
+  }
+  const ir=r*0.42;
+  svg+=`<circle cx="${cx}" cy="${cy}" r="${ir}" fill="rgba(9,9,11,.88)"/>`;
+  svg+=`<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${count>99?9:10}" font-weight="700" font-family="Space Mono,monospace">${count}</text>`;
+  svg+='</svg>';
+  return L.divIcon({html:svg,className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]});
 }
 
 // ============== NEWS DB ==============
@@ -408,8 +452,8 @@ const NEWS_DB={
 };
 
 function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(44,Math.max(10,6+Math.log10(pl)*6.5)))}
-function makeIcon(county,size,loss,tc){
-  const c=colorMode==='type'?(typeColors[getFireCat(tc)]||'#888'):(cColors[county]||'#888');
+function makeIcon(county,size,loss,tc,cause){
+  const c=colorMode==='cause'?(causeColors[normCause(cause)]||'#888'):colorMode==='type'?(typeColors[getFireCat(tc)]||'#888'):(cColors[county]||'#888');
   const op=loss>100000?'.95':loss>10000?'.85':'.65';
   const glow=loss>500000?'<circle cx="'+(size/2+4)+'" cy="'+(size/2+4)+'" r="'+(size/2+3)+'" fill="'+c+'" fill-opacity=".2"/>':'';
   return L.divIcon({className:'',iconSize:[size,size],iconAnchor:[size/2,size/2],
@@ -417,14 +461,17 @@ function makeIcon(county,size,loss,tc){
   });
 }
 const cluster=L.markerClusterGroup({maxClusterRadius:45,iconCreateFunction:function(cl){
-  return L.divIcon({html:'<div class="custom-cluster">'+cl.getChildCount()+'</div>',className:'',iconSize:[34,34]});
+  const markers=cl.getAllChildMarkers();
+  const counts={};
+  markers.forEach(m=>{const ck=m.options.causeKey||'unknown';counts[ck]=(counts[ck]||0)+1;});
+  return makePieCluster(cl.getChildCount(),counts);
 }});
 
 function buildMarkers(data){
   cluster.clearLayers();
   data.forEach(d=>{
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
-    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc)});
+    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc,d.cause),causeKey:normCause(d.cause)});
     const pop=document.createElement('div');
     const pt=document.createElement('div');pt.className='popup-type';pt.textContent=normType(d.tc);pop.appendChild(pt);
     const ptl=document.createElement('div');ptl.className='popup-title';ptl.textContent=d.addr||'(no address)';pop.appendChild(ptl);
@@ -557,22 +604,19 @@ const tabsEl=document.getElementById('tabs');
 
 // ============== FILTERS ==============
 // ============== COLOR BY TOGGLE ==============
-document.getElementById('color-county').addEventListener('click',()=>{
-  colorMode='county';
-  document.getElementById('color-county').classList.add('active');
-  document.getElementById('color-type').classList.remove('active');
-  document.getElementById('legend-county').style.display='flex';
-  document.getElementById('legend-type').style.display='none';
+function setColorMode(mode){
+  colorMode=mode;
+  ['cause','county','type'].forEach(m=>{
+    const btn=document.getElementById('color-'+m);
+    const leg=document.getElementById('legend-'+m);
+    if(btn) btn.classList.toggle('active',m===mode);
+    if(leg) leg.style.display=m===mode?'flex':'none';
+  });
   render();
-});
-document.getElementById('color-type').addEventListener('click',()=>{
-  colorMode='type';
-  document.getElementById('color-type').classList.add('active');
-  document.getElementById('color-county').classList.remove('active');
-  document.getElementById('legend-county').style.display='none';
-  document.getElementById('legend-type').style.display='flex';
-  render();
-});
+}
+document.getElementById('color-cause').addEventListener('click',()=>setColorMode('cause'));
+document.getElementById('color-county').addEventListener('click',()=>setColorMode('county'));
+document.getElementById('color-type').addEventListener('click',()=>setColorMode('type'));
 
 document.getElementById('f-county').addEventListener('change',e=>{AppState.nf.county=e.target.value;render()});
 document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year=e.target.value;syncImageryToYear(e.target.value);render()});
