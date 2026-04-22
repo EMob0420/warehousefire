@@ -33,7 +33,7 @@ header{padding-bottom:1.1rem;border-bottom:1px solid var(--border);margin-bottom
 .stats-divider{border:none;border-top:1px solid var(--border);margin:.85rem 0}
 .about-btn{background:none;border:1px solid var(--border);border-radius:5px;color:var(--text3);font-size:.75rem;font-family:inherit;padding:.25rem .6rem;cursor:pointer;white-space:nowrap;transition:all .12s;flex-shrink:0}
 .about-btn:hover{border-color:var(--text3);color:var(--text2)}
-.about-panel{display:none;max-width:800px;margin:.6rem auto 0;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:.75rem 1rem;text-align:left}
+.about-panel{display:none;max-width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:.65rem .75rem;text-align:left}
 .about-panel.open{display:block}
 .about-panel p{font-size:.86rem;color:var(--text3);line-height:1.65;margin:0 0 .5rem}
 .about-panel p:last-child{margin-bottom:0}
@@ -43,26 +43,31 @@ header{padding-bottom:1.1rem;border-bottom:1px solid var(--border);margin-bottom
 .stat-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text3);font-weight:700}
 .stat-val{font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--text);line-height:1.2}
 .stat-sub{font-size:.72rem;color:var(--text3)}
-/* ── FILTER BAR ── */
-.filter-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding:.55rem .7rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:.6rem}
-.filter-bar label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:700;white-space:nowrap}
-.filter-bar select,.filter-bar input[type=search]{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:.3rem .5rem;font-family:inherit;font-size:.82rem;outline:none;transition:border-color .15s;width:auto}
-.filter-bar select:focus,.filter-bar input[type=search]:focus{border-color:var(--accent)}
-.filter-bar input[type=search]{width:130px}
-.fb-divider{width:1px;height:20px;background:var(--border);flex-shrink:0}
+/* ── ACTION BUTTONS ── */
 .action-btn{padding:.3rem .75rem;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .12s}
 .action-btn:hover{border-color:var(--accent);color:var(--accent)}
 .action-btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
 .action-btn.primary:hover{opacity:.85}
-/* ── LEGEND (inside filter bar) ── */
-.legend{display:flex;align-items:center;gap:.85rem;flex-wrap:wrap}
-.legend-item{display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--text2)}
-.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-.legend-toggle{display:flex;align-items:center;gap:.3rem;margin-left:.25rem}
-.legend-toggle-btn{padding:.2rem .55rem;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:.68rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
-.legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
+/* ── MAP ROW (map + sidebar) ── */
+.map-row{display:flex;gap:.75rem;align-items:flex-start;margin-bottom:1rem}
+.map-row .map-wrap{flex:1;min-width:0;margin-bottom:0}
 /* ── MAP ── */
 .map-wrap{height:600px;border-radius:10px;overflow:hidden;border:1px solid var(--border);position:relative;margin-bottom:1rem}
+/* ── SIDEBAR ── */
+.map-sidebar{width:220px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;height:600px;overflow-y:auto;display:flex;flex-direction:column;font-family:inherit}
+.sb-section{padding:.55rem .7rem}
+.sb-divider{border:none;border-top:1px solid var(--border);margin:0;flex-shrink:0}
+.sb-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:700;display:block;margin-bottom:.35rem}
+.map-sidebar select,.map-sidebar input[type=search]{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:.3rem .5rem;font-family:inherit;font-size:.82rem;outline:none;transition:border-color .15s;width:100%;display:block;box-sizing:border-box}
+.map-sidebar select:focus,.map-sidebar input[type=search]:focus{border-color:var(--accent)}
+/* ── LEGEND (inside sidebar) ── */
+.legend{display:flex;flex-direction:column;gap:.4rem}
+.legend-item{display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--text2)}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.legend-color-group{display:flex;flex-direction:column;gap:.3rem}
+.legend-toggle{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.35rem}
+.legend-toggle-btn{padding:.2rem .5rem;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:.68rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
+.legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
 #map{width:100%;height:100%;z-index:1}
 /* ── CHARTS ── */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
@@ -126,9 +131,6 @@ td{padding:.45rem .6rem;color:var(--text2)}
 .cl-popup-addr{font-weight:600;color:var(--text);line-height:1.3}
 .cl-popup-meta{color:var(--text2);font-size:.73rem;margin-top:.08rem}
 .cl-popup-loss{font-family:'Space Mono',monospace;font-size:.73rem;color:var(--accent)}
-.legend-toggle{display:flex;align-items:center;gap:.4rem;margin-left:auto}
-.legend-toggle-btn{padding:.25rem .7rem;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
-.legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
 .marker-cluster,.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background:transparent!important;border:none!important;box-shadow:none!important}
 .marker-cluster div,.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:transparent!important;border:none!important;box-shadow:none!important}
 .cause-tooltip{background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:8px!important;padding:0!important;box-shadow:0 6px 24px rgba(0,0,0,.5)!important}
@@ -159,71 +161,127 @@ footer a{color:var(--accent);text-decoration:none}
   </div>
   <p class="hero-tagline"><strong>654 structure fires across SoCal, 2005–2024</strong></p>
   <hr class="stats-divider">
-  <div style="display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap">
-    <div class="stats" id="stats"></div>
-    <button class="about-btn" id="btn-about">? About this data</button>
-  </div>
-  <div class="about-panel" id="about-panel">
-    <p>This tool maps structure fires reported to FEMA's National Fire Incident Reporting System (NFIRS) across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024. Use the filters to explore fires by county, year, building size, or cause. Marker size reflects property loss; color reflects structure type or cause depending on the selected mode.</p>
-    <p>Fires are categorized as <strong style="color:var(--text2)">Warehouse fires</strong> (properties classified as PUC 891 or buildings ≥10,000 sq ft) or <strong style="color:var(--text2)">Building fires</strong> (all other commercial and industrial structures). While FEMA does not separately track warehouse fires, buildings over 10,000 sq ft in these counties are reasonably assumed to include warehouse and distribution center use.</p>
-  </div>
+  <div class="stats" id="stats"></div>
 </header>
 
-<!-- FILTER BAR -->
-<div class="filter-bar">
-  <label>County</label>
-  <select id="f-county"><option value="">All Counties</option><option value="Los Angeles">Los Angeles County</option><option value="San Bernardino">San Bernardino County</option><option value="Riverside">Riverside County</option><option value="Orange">Orange County</option></select>
-  <label>Year</label>
-  <select id="f-year"><option value="">All Years</option><option>2002</option><option>2005</option><option>2006</option><option>2007</option><option>2008</option><option>2009</option><option>2010</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
-  <label>Size</label>
-  <select id="f-sqft"><option value="">All Sizes</option><option value="small">Under 10K sq ft</option><option value="medium">10K–50K sq ft</option><option value="large">50K–200K sq ft</option><option value="mega">200K+ sq ft</option></select>
-  <label>Type</label>
-  <div style="display:flex;gap:.25rem">
-    <button class="legend-toggle-btn active" id="f-btype-all">All</button>
-    <button class="legend-toggle-btn" id="f-btype-warehouse">Warehouses</button>
-    <button class="legend-toggle-btn" id="f-btype-building">Buildings</button>
-  </div>
-  <input type="search" id="f-search" placeholder="City or address…">
-  <button class="action-btn" id="btn-reset">Reset</button>
-  <button class="action-btn primary" id="btn-export">Export CSV</button>
-  <div class="fb-divider"></div>
-  <div id="legend" class="legend">
-    <div id="legend-cause" style="display:none;gap:.75rem;flex-wrap:wrap;align-items:center">
-      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Arson</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>Equip. Failure</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Unintentional</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Investigating</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div>Undetermined</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Other</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#3f3f46"></div>Unknown</div>
-    </div>
-    <div id="legend-county" style="display:none;gap:.75rem;flex-wrap:wrap;align-items:center">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--la)"></div>LA</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--sb)"></div>San Bernardino</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--oc)"></div>Orange</div>
-    </div>
-    <div id="legend-type" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
-      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Warehouse</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Building Fire</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Other Structure</div>
-    </div>
-    <div style="display:flex;gap:.75rem;align-items:center;flex-shrink:0">
-      <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><circle cx="5" cy="5" r="4" fill="#71717a" fill-opacity=".85"/></svg>Warehouse</div>
-      <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><circle cx="5" cy="5" r="3" fill="#71717a" fill-opacity=".35" stroke="#fff" stroke-width="1.5"/></svg>Building</div>
-    </div>
-    <div class="legend-toggle">
-      <span style="font-size:.65rem;color:var(--text3);font-weight:700">Color</span>
-      <button class="legend-toggle-btn" id="color-cause">Cause</button>
-      <button class="legend-toggle-btn" id="color-county">County</button>
-      <button class="legend-toggle-btn active" id="color-type">Type</button>
-    </div>
-  </div>
-  <div style="font-size:.68rem;color:var(--text3);padding:.3rem .7rem .35rem;border-top:1px solid var(--border);width:100%;font-style:italic">Note: Many FEMA records have incomplete cause data — unknown-cause markers are shown smaller and dimmed.</div>
-</div>
+<!-- MAP ROW -->
+<div class="map-row">
+  <!-- MAP -->
+  <div class="map-wrap"><div id="map"></div><div id="img-info"></div></div>
 
-<!-- MAP — full width -->
-<div class="map-wrap"><div id="map"></div><div id="img-info"></div></div>
+  <!-- SIDEBAR -->
+  <div class="map-sidebar">
+
+    <!-- Legend -->
+    <div class="sb-section">
+      <span class="sb-label">Legend</span>
+      <div id="legend" class="legend">
+        <div id="legend-type" class="legend-color-group">
+          <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Warehouse</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Building Fire</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Other Structure</div>
+        </div>
+        <div id="legend-cause" class="legend-color-group" style="display:none">
+          <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Arson</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>Equip. Failure</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Unintentional</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Investigating</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div>Undetermined</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Other</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3f3f46"></div>Unknown</div>
+        </div>
+        <div id="legend-county" class="legend-color-group" style="display:none">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--la)"></div>Los Angeles</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--sb)"></div>San Bernardino</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--oc)"></div>Orange</div>
+        </div>
+        <div class="legend-color-group" style="margin-top:.15rem;padding-top:.35rem;border-top:1px solid var(--border)">
+          <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><circle cx="5" cy="5" r="4" fill="#71717a" fill-opacity=".85"/></svg>Solid = Warehouse</div>
+          <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><circle cx="5" cy="5" r="3" fill="#71717a" fill-opacity=".35" stroke="#fff" stroke-width="1.5"/></svg>Outlined = Building</div>
+        </div>
+        <div class="legend-toggle">
+          <span class="sb-label" style="margin-bottom:0">Color by</span>
+          <button class="legend-toggle-btn" id="color-cause">Cause</button>
+          <button class="legend-toggle-btn" id="color-county">County</button>
+          <button class="legend-toggle-btn active" id="color-type">Type</button>
+        </div>
+      </div>
+    </div>
+
+    <hr class="sb-divider">
+
+    <!-- County -->
+    <div class="sb-section">
+      <label class="sb-label" for="f-county">County</label>
+      <select id="f-county"><option value="">All Counties</option><option value="Los Angeles">Los Angeles County</option><option value="San Bernardino">San Bernardino County</option><option value="Riverside">Riverside County</option><option value="Orange">Orange County</option></select>
+    </div>
+
+    <hr class="sb-divider">
+
+    <!-- Year -->
+    <div class="sb-section">
+      <label class="sb-label" for="f-year">Year</label>
+      <select id="f-year"><option value="">All Years</option><option>2002</option><option>2005</option><option>2006</option><option>2007</option><option>2008</option><option>2009</option><option>2010</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
+    </div>
+
+    <hr class="sb-divider">
+
+    <!-- Size -->
+    <div class="sb-section">
+      <label class="sb-label" for="f-sqft">Building Size</label>
+      <select id="f-sqft"><option value="">All Sizes</option><option value="small">Under 10K sq ft</option><option value="medium">10K–50K sq ft</option><option value="large">50K–200K sq ft</option><option value="mega">200K+ sq ft</option></select>
+    </div>
+
+    <hr class="sb-divider">
+
+    <!-- Type -->
+    <div class="sb-section">
+      <span class="sb-label">Type</span>
+      <div style="display:flex;gap:.25rem;flex-wrap:wrap">
+        <button class="legend-toggle-btn active" id="f-btype-all">All</button>
+        <button class="legend-toggle-btn" id="f-btype-warehouse">Warehouses</button>
+        <button class="legend-toggle-btn" id="f-btype-building">Buildings</button>
+      </div>
+    </div>
+
+    <hr class="sb-divider">
+
+    <!-- Search -->
+    <div class="sb-section">
+      <label class="sb-label" for="f-search">Search</label>
+      <input type="search" id="f-search" placeholder="City or address…">
+    </div>
+
+    <hr class="sb-divider">
+
+    <!-- Actions -->
+    <div class="sb-section" style="display:flex;gap:.4rem;flex-wrap:wrap">
+      <button class="action-btn" id="btn-reset">Reset</button>
+      <button class="action-btn primary" id="btn-export">Export CSV</button>
+    </div>
+
+    <hr class="sb-divider">
+
+    <!-- Note -->
+    <div class="sb-section" style="font-size:.68rem;color:var(--text3);font-style:italic;line-height:1.5">Note: Many FEMA records have incomplete cause data — unknown-cause markers are shown smaller and dimmed.</div>
+
+    <!-- Spacer -->
+    <div style="flex:1"></div>
+
+    <hr class="sb-divider">
+
+    <!-- About -->
+    <div class="sb-section">
+      <div class="about-panel" id="about-panel" style="margin-bottom:.5rem">
+        <p>This tool maps structure fires reported to FEMA's National Fire Incident Reporting System (NFIRS) across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024. Use the filters to explore fires by county, year, building size, or cause. Marker size reflects property loss; color reflects structure type or cause depending on the selected mode.</p>
+        <p>Fires are categorized as <strong style="color:var(--text2)">Warehouse fires</strong> (properties classified as PUC 891 or buildings ≥10,000 sq ft) or <strong style="color:var(--text2)">Building fires</strong> (all other commercial and industrial structures). While FEMA does not separately track warehouse fires, buildings over 10,000 sq ft in these counties are reasonably assumed to include warehouse and distribution center use.</p>
+      </div>
+      <button class="about-btn" id="btn-about" style="width:100%">? About this data</button>
+    </div>
+
+  </div>
+</div>
 
 <!-- hidden tab divs kept for JS compatibility -->
 <div id="tabs" style="display:none"></div>
