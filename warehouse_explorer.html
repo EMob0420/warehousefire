@@ -34,7 +34,7 @@ header{display:flex;align-items:flex-end;justify-content:space-between;padding-b
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem .85rem;transition:transform .12s}
 .stat:hover{transform:translateY(-1px)}
 .stat-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.18em;color:var(--text3);font-weight:600}
-.stat-val{font-family:'Space Mono',monospace;font-size:1.8rem;font-weight:700;line-height:1.2;margin-top:.1rem}
+.stat-val{font-family:'Space Mono',monospace;font-size:1.8rem;font-weight:700;line-height:1.2;margin-top:.1rem;color:var(--text)}
 .stat-sub{font-size:.8rem;color:var(--text2);margin-top:.1rem}
 .legend{display:flex;gap:1.25rem;flex-wrap:wrap;margin-bottom:.75rem}
 .legend-item{display:flex;align-items:center;gap:.3rem;font-size:.85rem;color:var(--text2)}
@@ -99,6 +99,16 @@ td{padding:.45rem .6rem;color:var(--text2)}
 .legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
 .marker-cluster,.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background:transparent!important;border:none!important;box-shadow:none!important}
 .marker-cluster div,.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:transparent!important;border:none!important;box-shadow:none!important}
+.cause-tooltip{background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:8px!important;padding:0!important;box-shadow:0 6px 24px rgba(0,0,0,.5)!important}
+.cause-tooltip::before{display:none!important}
+.ctip{min-width:170px;padding:8px 10px;font-family:'Sora',sans-serif}
+.ctip-total{font-weight:700;font-size:.85rem;margin-bottom:.45rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.3rem}
+.ctip-row{display:flex;align-items:center;gap:.4rem;font-size:.75rem;margin-bottom:.2rem}
+.ctip-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.ctip-lbl{color:var(--text2);flex:1;white-space:nowrap}
+.ctip-bar-wrap{width:50px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.ctip-bar-fill{height:100%;border-radius:3px}
+.ctip-n{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--text);min-width:20px;text-align:right}
 .base-toggle-btn{background:rgba(9,9,11,.82);color:#a1a1aa;border:1px solid #3f3f46;border-radius:5px;padding:5px 10px;font-size:.78rem;font-family:'Space Mono',monospace;cursor:pointer;transition:all .15s;white-space:nowrap}
 .base-toggle-btn:hover{color:#fafafa;border-color:#71717a}
 #img-info{position:absolute;bottom:28px;left:8px;z-index:800;background:rgba(9,9,11,.8);color:#71717a;padding:3px 8px;border-radius:4px;font-size:.7rem;font-family:'Space Mono',monospace;pointer-events:none;display:none}
@@ -438,6 +448,32 @@ function normCause(cause){
   if(cause==='Undetermined') return 'undetermined';
   return 'other';
 }
+const causeLabelMap={arson:'Arson',equipment:'Equipment Failure',unintentional:'Unintentional',investigating:'Under Investigation',undetermined:'Undetermined',other:'Other / Nature',unknown:'Unknown'};
+
+function makeSimpleDot(count,counts){
+  const dominant=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  const color=causeColors[dominant?dominant[0]:'unknown']||'#888';
+  const size=Math.round(Math.min(58,Math.max(20,12+Math.log10(count)*15)));
+  const cx=size/2,cy=size/2,r=size/2-1.5;
+  const svg=`<svg width="${size}" height="${size}" style="filter:drop-shadow(0 1px 4px rgba(0,0,0,.6))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" fill-opacity=".88" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${count>99?9:10}" font-weight="700" font-family="Space Mono,monospace">${count}</text></svg>`;
+  return L.divIcon({html:svg,className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]});
+}
+
+function buildClusterTip(cl){
+  const total=cl.getChildCount();
+  const markers=cl.getAllChildMarkers();
+  const counts={};
+  markers.forEach(m=>{const ck=m.options.causeKey||'unknown';counts[ck]=(counts[ck]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  let html=`<div class="ctip"><div class="ctip-total">${total} fires</div>`;
+  sorted.forEach(([cat,cnt])=>{
+    const pct=Math.round(cnt/total*100);
+    html+=`<div class="ctip-row"><span class="ctip-dot" style="background:${causeColors[cat]||'#888'}"></span><span class="ctip-lbl">${causeLabelMap[cat]||cat}</span><span class="ctip-bar-wrap"><span class="ctip-bar-fill" style="width:${pct}%;background:${causeColors[cat]||'#888'}"></span></span><span class="ctip-n">${cnt}</span></div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
 function makePieCluster(count,counts){
   const size=count>99?54:count>9?46:38;
   const r=size/2-3;const cx=size/2,cy=size/2;
@@ -500,8 +536,18 @@ const cluster=L.markerClusterGroup({maxClusterRadius:45,iconCreateFunction:funct
   const markers=cl.getAllChildMarkers();
   const counts={};
   markers.forEach(m=>{const ck=m.options.causeKey||'unknown';counts[ck]=(counts[ck]||0)+1;});
-  return makePieCluster(cl.getChildCount(),counts);
+  const count=cl.getChildCount();
+  const zoom=map.getZoom();
+  return (zoom>=11||count<=10)?makePieCluster(count,counts):makeSimpleDot(count,counts);
 }});
+
+// Hover tooltip on clusters
+const clTip=L.tooltip({direction:'top',permanent:false,opacity:1,className:'cause-tooltip'});
+cluster.on('clustermouseover',function(e){
+  clTip.setLatLng(e.layer.getLatLng()).setContent(buildClusterTip(e.layer)).addTo(map);
+});
+cluster.on('clustermouseout',function(){clTip.remove();});
+cluster.on('clusterclick',function(){clTip.remove();});
 
 function buildMarkers(data){
   cluster.clearLayers();
@@ -546,11 +592,11 @@ function renderStats(data){
   if(AppState.tab==='fires'){
     const loss=data.reduce((s,d)=>s+d.pl,0);const bldg=data.filter(d=>d.tc==='111').length;
     const inj=data.reduce((s,d)=>s+d.ffi+d.cvi,0);const deaths=data.reduce((s,d)=>s+d.ffd+d.cvd,0);
-    add('Incidents',data.length.toLocaleString(),'warehouse incidents','#f43f5e');
-    add('Building Fires',bldg.toLocaleString(),'structure fires (111)','#fb923c');
-    add('Property Loss','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage','#facc15');
-    add('Injuries / Deaths',inj+' / '+deaths,'reported casualties','#a78bfa');
-    add('Cities',new Set(data.map(d=>d.ci)).size,'unique locations','#22d3ee');
+    add('Incidents',data.length.toLocaleString(),'warehouse incidents');
+    add('Building Fires',bldg.toLocaleString(),'structure fires (111)');
+    add('Property Loss','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage');
+    add('Injuries / Deaths',inj+' / '+deaths,'reported casualties');
+    add('Cities',new Set(data.map(d=>d.ci)).size,'unique locations');
   }else{
     add('IE Vacancy','8.8%','Q1 2026 (JLL)','#fb923c');
     add('LA Vacancy','4.6%','Q4 2025 (Lee & Assoc)','#f43f5e');
