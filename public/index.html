@@ -142,7 +142,8 @@ footer a{color:var(--accent);text-decoration:none}
     <img src="logo.png" alt="SoCal Earth — Pitzer College Robert Redford Conservancy">
     <h1>SoCal Warehouse <span>Fire Explorer</span></h1>
   </div>
-  <p class="hero-tagline"><strong>654 warehouse structure fires</strong> across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024 — where they happened, how large they were, and what caused them.</p>
+  <p class="hero-tagline"><strong>654 structure fires including warehouses, commercial buildings, and industrial facilities</strong> across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024.</p>
+  <p style="font-size:.85rem;color:var(--text3);margin-bottom:.7rem;max-width:680px;line-height:1.5">Fires are color-coded by cause. Marker size reflects property loss. Use the filters to explore by county, year, or building size.</p>
   <div class="stats" id="stats"></div>
 </header>
 
@@ -186,6 +187,7 @@ footer a{color:var(--accent);text-decoration:none}
       <button class="legend-toggle-btn" id="color-type">Type</button>
     </div>
   </div>
+  <div style="font-size:.68rem;color:var(--text3);padding:.3rem .7rem .35rem;border-top:1px solid var(--border);width:100%;font-style:italic">Note: Many FEMA records have incomplete cause data — unknown-cause markers are shown smaller and dimmed.</div>
 </div>
 
 <!-- MAP — full width -->
@@ -223,7 +225,7 @@ footer a{color:var(--accent);text-decoration:none}
 
 <!-- MARKET DATA — secondary, collapsed -->
 <details class="market-accordion">
-  <summary>📊 Market Context — vacancy rates, major tenants &amp; sources</summary>
+  <summary>Market Context (for researchers) — vacancy rates, major tenants &amp; sources</summary>
   <div class="market-accordion-body">
     <div class="charts" style="margin:0">
       <div class="panel active" id="panel-market">
@@ -246,8 +248,9 @@ footer a{color:var(--accent);text-decoration:none}
   </div><!-- end market-accordion-body -->
 </details><!-- end market-accordion -->
 
-<footer style="text-align:center;padding:1.5rem 0 1rem;color:var(--text3);font-size:.75rem;border-top:1px solid var(--border);margin-top:1rem">
-  Data: <a href="https://www.fema.gov/about/openfema/data-sets/fema-usfa-nfirs-annual-data" target="_blank" style="color:var(--accent);text-decoration:none">NFIRS Public Data (USFA/FEMA)</a> · PUC 891 (Warehouse) + INC 111 (Building Fire) · Storage yard fires (INC 150–162) excluded · 2005–2024
+<footer style="padding:1.5rem 0 1rem;color:var(--text3);font-size:.75rem;border-top:1px solid var(--border);margin-top:1rem;line-height:1.7;max-width:860px">
+  <strong style="color:var(--text2)">Data source:</strong> <a href="https://www.fema.gov/about/openfema/data-sets/fema-usfa-nfirs-annual-data" target="_blank" style="color:var(--accent);text-decoration:none">FEMA NFIRS Public Data</a> (USFA/FEMA) · Property Use Code 891 (Warehouse) + Incident Type 111 (Building Fire) · Storage yard and outside fires (INC 150–162) excluded · 2005–2024<br>
+  This map includes all structure fires (code 111) logged in the four-county region. Not all records include complete address, cause, or loss data. This is a research tool, not an official fire report.
 </footer>
 </div>
 
@@ -505,8 +508,12 @@ const NEWS_DB={
 
 function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(44,Math.max(10,6+Math.log10(pl)*6.5)))}
 function makeIcon(county,size,loss,tc,cause,sqft){
-  const c=colorMode==='cause'?(causeColors[normCause(cause)]||'#888'):colorMode==='type'?(typeColors[getFireCat(tc)]||'#888'):(cColors[county]||'#888');
-  const op=loss>100000?'.95':loss>10000?'.85':'.65';
+  const cat=normCause(cause);
+  const isUnknown=colorMode==='cause'&&cat==='unknown';
+  const c=colorMode==='cause'?(causeColors[cat]||'#888'):colorMode==='type'?(typeColors[getFireCat(tc)]||'#888'):(cColors[county]||'#888');
+  // Unknown cause: shrink and dim so named-cause markers stand out
+  if(isUnknown){size=Math.max(6,Math.round(size*.65));}
+  const op=isUnknown?'.35':loss>100000?'.95':loss>10000?'.85':'.65';
   const sw=loss>100000?'1.5':'0.8';
   const pad=4;const W=size+pad*2;const cx=W/2,cy=W/2;const r=size/2-1;
   const isWarehouse=sqft>=10000;
@@ -530,8 +537,14 @@ const cluster=L.markerClusterGroup({maxClusterRadius:45,iconCreateFunction:funct
   const counts={};
   markers.forEach(m=>{const ck=m.options.causeKey||'unknown';counts[ck]=(counts[ck]||0)+1;});
   const count=cl.getChildCount();
-  const zoom=map.getZoom();
-  return (zoom>=11||count<=10)?makePieCluster(count,counts):makeSimpleDot(count,counts);
+  // Always use simple circle — dominant cause color, count label only for 10+
+  const dominant=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  const color=causeColors[dominant?dominant[0]:'unknown']||'#888';
+  const size=Math.round(Math.min(58,Math.max(20,12+Math.log10(count)*15)));
+  const cx=size/2,cy=size/2,r=size/2-1.5;
+  const label=count>=10?`<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${count>99?9:10}" font-weight="700" font-family="Space Mono,monospace">${count}</text>`:'';
+  const svg=`<svg width="${size}" height="${size}" style="filter:drop-shadow(0 1px 4px rgba(0,0,0,.6))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" fill-opacity=".88" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/>${label}</svg>`;
+  return L.divIcon({html:svg,className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]});
 }});
 
 // Hover tooltip on clusters
@@ -583,10 +596,11 @@ function renderStats(data){
     d.appendChild(lb);d.appendChild(vl);d.appendChild(sb);el.appendChild(d);
   }
   if(AppState.tab==='fires'){
-    const loss=data.reduce((s,d)=>s+d.pl,0);const bldg=data.filter(d=>d.tc==='111').length;
+    const loss=data.reduce((s,d)=>s+d.pl,0);
+    const arson=data.filter(d=>d.cause==='Intentional (Arson)').length;
     const inj=data.reduce((s,d)=>s+d.ffi+d.cvi,0);const deaths=data.reduce((s,d)=>s+d.ffd+d.cvd,0);
-    add('Incidents',data.length.toLocaleString(),'warehouse incidents');
-    add('Building Fires',bldg.toLocaleString(),'structure fires (111)');
+    add('Structure Fires',data.length.toLocaleString(),'PUC 891 + INC 111');
+    add('Arson Cases',arson.toLocaleString(),'intentional ignition');
     add('Property Loss','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage');
     add('Injuries / Deaths',inj+' / '+deaths,'reported casualties');
     add('Cities',new Set(data.map(d=>d.ci)).size,'unique locations');
