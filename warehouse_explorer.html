@@ -90,6 +90,13 @@ td{padding:.45rem .6rem;color:var(--text2)}
 .popup-title{font-weight:700;font-size:1rem;margin:.15rem 0}
 .popup-detail{font-size:.85rem;color:var(--text2)}
 .popup-loss{font-family:'Space Mono',monospace;font-size:.95rem;color:var(--accent);margin-top:.25rem}
+.popup-news{margin-top:.4rem;padding-top:.35rem;border-top:1px solid rgba(63,63,70,.5)}
+.popup-news a{font-size:.78rem;color:#fb923c;text-decoration:none;line-height:1.4;display:block}
+.popup-news a:hover{text-decoration:underline}
+.popup-news-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:#71717a;margin-bottom:.15rem;font-weight:600}
+.legend-toggle{display:flex;align-items:center;gap:.4rem;margin-left:auto}
+.legend-toggle-btn{padding:.25rem .7rem;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
+.legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
 .custom-cluster{background:rgba(244,63,94,.8);border:2px solid rgba(244,63,94,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:white;font-family:'Space Mono',monospace}
 .base-toggle-btn{background:rgba(9,9,11,.82);color:#a1a1aa;border:1px solid #3f3f46;border-radius:5px;padding:5px 10px;font-size:.78rem;font-family:'Space Mono',monospace;cursor:pointer;transition:all .15s;white-space:nowrap}
 .base-toggle-btn:hover{color:#fafafa;border-color:#71717a}
@@ -111,11 +118,23 @@ footer a{color:var(--accent);text-decoration:none}
   <div class="hdr-right" id="tabs"></div>
 </header>
 <div class="stats" id="stats"></div>
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:var(--la)"></div>Los Angeles</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--sb)"></div>San Bernardino</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--oc)"></div>Orange</div>
+<div class="legend" id="legend">
+  <div id="legend-county" style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--la)"></div>Los Angeles</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--sb)"></div>San Bernardino</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--oc)"></div>Orange</div>
+  </div>
+  <div id="legend-type" style="display:none;gap:1.25rem;flex-wrap:wrap;align-items:center">
+    <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Building / Structure</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Outside / Storage</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Vehicle / Other</div>
+  </div>
+  <div class="legend-toggle">
+    <span style="font-size:.72rem;color:var(--text3);font-weight:600">Color by</span>
+    <button class="legend-toggle-btn active" id="color-county">County</button>
+    <button class="legend-toggle-btn" id="color-type">Fire Type</button>
+  </div>
 </div>
 
 <!-- WAREHOUSE FIRES TAB -->
@@ -368,9 +387,29 @@ function syncImageryToYear(year){
   }
 }
 
+// ============== COLOR MODE ==============
+let colorMode='county';
+const typeColors={building:'#f97316',outside:'#a855f7',other:'#60a5fa'};
+function getFireCat(tc){
+  if(['111','112','115'].includes(tc)) return 'building';
+  if(['118','150','151','152','154','155','160','161','162'].includes(tc)) return 'outside';
+  return 'other';
+}
+
+// ============== NEWS DB ==============
+// Keyed by "YYYY-MM-DD|CITY" matching NFIRS dt + ci fields
+const NEWS_DB={
+  '2020-06-02|REDLANDS':{headline:'Amazon 600K sq ft distribution center destroyed; roof collapsed',source:'ABC7',url:'https://abc7.com/post/three-alarm-fire-erupts-at-distribution-facility-in-redlands/6233005/'},
+  '2016-06-14|MAYWOOD':{headline:'Magnesium warehouse fire causes explosions and power outages',source:'KTLA',url:'https://ktla.com/news/local-news/magnesium-fueled-warehouse-fire-in-maywood-causes-explosions-power-outages/'},
+  '2014-10-05|SANTA FE SPRINGS':{headline:'Four-alarm warehouse fire damages 5 buildings, multiple explosions',source:'KTLA',url:'https://ktla.com/news/local-news/santa-fe-springs-streets-closed-after-fire-erupts-in-warehouse/'},
+  '2023-05-05|COMMERCE':{headline:'Three-alarm furniture warehouse fire; roof collapse; 100+ firefighters',source:'ABC7',url:'https://abc7.com/commerce-fire-building-structure/13214769/'},
+  '2020-05-16|LOS ANGELES':{headline:'Warehouse explosions injure 12+ firefighters (butane canisters, Downtown LA)',source:'KTLA',url:'https://ktla.com/news/local-news/explosions-rip-through-los-angeles-warehouse/'},
+  '2024-12-08|SOUTH EL MONTE':{headline:'Two-alarm Amazon warehouse fire; roof collapsed; lithium-ion batteries',source:'NBC LA',url:'https://www.nbclosangeles.com/news/local/el-monte-amazon-warehouse-fire/3577475/'},
+};
+
 function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(44,Math.max(10,6+Math.log10(pl)*6.5)))}
-function makeIcon(county,size,loss){
-  const c=cColors[county]||'#888';
+function makeIcon(county,size,loss,tc){
+  const c=colorMode==='type'?(typeColors[getFireCat(tc)]||'#888'):(cColors[county]||'#888');
   const op=loss>100000?'.95':loss>10000?'.85':'.65';
   const glow=loss>500000?'<circle cx="'+(size/2+4)+'" cy="'+(size/2+4)+'" r="'+(size/2+3)+'" fill="'+c+'" fill-opacity=".2"/>':'';
   return L.divIcon({className:'',iconSize:[size,size],iconAnchor:[size/2,size/2],
@@ -385,7 +424,7 @@ function buildMarkers(data){
   cluster.clearLayers();
   data.forEach(d=>{
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
-    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl)});
+    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc)});
     const pop=document.createElement('div');
     const pt=document.createElement('div');pt.className='popup-type';pt.textContent=normType(d.tc);pop.appendChild(pt);
     const ptl=document.createElement('div');ptl.className='popup-title';ptl.textContent=d.addr||'(no address)';pop.appendChild(ptl);
@@ -396,6 +435,14 @@ function buildMarkers(data){
     const pl=document.createElement('div');pl.className='popup-loss';
     pl.textContent=d.pl>0?'Loss: $'+d.pl.toLocaleString():'No loss reported';
     if(d.pl<=0)pl.style.color='var(--text3)';pop.appendChild(pl);
+    const newsItem=NEWS_DB[d.dt+'|'+d.ci];
+    if(newsItem){
+      const pn=document.createElement('div');pn.className='popup-news';
+      const nlbl=document.createElement('div');nlbl.className='popup-news-label';nlbl.textContent='In the News';pn.appendChild(nlbl);
+      const na=document.createElement('a');na.href=newsItem.url;na.target='_blank';na.rel='noopener noreferrer';
+      na.textContent=newsItem.headline+' — '+newsItem.source;pn.appendChild(na);
+      pop.appendChild(pn);
+    }
     m.bindPopup(pop);cluster.addLayer(m);
   });
   map.addLayer(cluster);
@@ -506,6 +553,24 @@ const tabsEl=document.getElementById('tabs');
 });
 
 // ============== FILTERS ==============
+// ============== COLOR BY TOGGLE ==============
+document.getElementById('color-county').addEventListener('click',()=>{
+  colorMode='county';
+  document.getElementById('color-county').classList.add('active');
+  document.getElementById('color-type').classList.remove('active');
+  document.getElementById('legend-county').style.display='flex';
+  document.getElementById('legend-type').style.display='none';
+  render();
+});
+document.getElementById('color-type').addEventListener('click',()=>{
+  colorMode='type';
+  document.getElementById('color-type').classList.add('active');
+  document.getElementById('color-county').classList.remove('active');
+  document.getElementById('legend-county').style.display='none';
+  document.getElementById('legend-type').style.display='flex';
+  render();
+});
+
 document.getElementById('f-county').addEventListener('change',e=>{AppState.nf.county=e.target.value;render()});
 document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year=e.target.value;syncImageryToYear(e.target.value);render()});
 document.getElementById('f-sqft').addEventListener('change',e=>{AppState.nf.sqft=e.target.value;render()});
