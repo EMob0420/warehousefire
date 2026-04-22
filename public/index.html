@@ -532,25 +532,44 @@ function makeIcon(county,size,loss,tc,cause,sqft){
     html:`<svg width="${W}" height="${W}" style="overflow:visible">${glow}${shape}</svg>`
   });
 }
+function clusterPx(count){if(count===1)return 12;if(count<=5)return 18;if(count<=15)return 26;if(count<=50)return 36;return 48;}
 const cluster=L.markerClusterGroup({maxClusterRadius:45,iconCreateFunction:function(cl){
   const markers=cl.getAllChildMarkers();
   const counts={};
   markers.forEach(m=>{const ck=m.options.causeKey||'unknown';counts[ck]=(counts[ck]||0)+1;});
   const count=cl.getChildCount();
-  // Always use simple circle — dominant cause color, count label only for 10+
   const dominant=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
-  const color=causeColors[dominant?dominant[0]:'unknown']||'#888';
-  const size=Math.round(Math.min(58,Math.max(20,12+Math.log10(count)*15)));
+  const domCat=dominant?dominant[0]:'unknown';
+  const isUnknown=domCat==='unknown';
+  let size=clusterPx(count);
+  const opacity=isUnknown?'0.5':'0.88';
+  if(isUnknown&&size>20)size=20;
+  const color=causeColors[domCat]||'#888';
   const cx=size/2,cy=size/2,r=size/2-1.5;
-  const label=count>=10?`<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${count>99?9:10}" font-weight="700" font-family="Space Mono,monospace">${count}</text>`:'';
-  const svg=`<svg width="${size}" height="${size}" style="filter:drop-shadow(0 1px 4px rgba(0,0,0,.6))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" fill-opacity=".88" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/>${label}</svg>`;
-  return L.divIcon({html:svg,className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]});
+  const showLabel=size>=26;
+  const fs=count>99?9:count>9?10:11;
+  const label=showLabel?`<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${fs}" font-weight="700" font-family="Space Mono,monospace">${count}</text>`:'';
+  const svg=`<svg width="${size}" height="${size}" style="filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" fill-opacity="${opacity}" stroke="rgba(255,255,255,.5)" stroke-width="1"/>${label}</svg>`;
+  return L.divIcon({html:svg,className:'',iconSize:[size,size],iconAnchor:[cx,cy]});
 }});
 
-// Hover tooltip on clusters
+// Hover tooltip on clusters — city, count, dominant cause only
 const clTip=L.tooltip({direction:'top',permanent:false,opacity:1,className:'cause-tooltip'});
 cluster.on('clustermouseover',function(e){
-  clTip.setLatLng(e.layer.getLatLng()).setContent(buildClusterTip(e.layer)).addTo(map);
+  const cl=e.layer;
+  const markers=cl.getAllChildMarkers();
+  const causeCounts={},cityCounts={};
+  markers.forEach(m=>{
+    const ck=m.options.causeKey||'unknown';causeCounts[ck]=(causeCounts[ck]||0)+1;
+    const cy=m.options.cityKey||'';if(cy)cityCounts[cy]=(cityCounts[cy]||0)+1;
+  });
+  const domCause=Object.entries(causeCounts).sort((a,b)=>b[1]-a[1])[0];
+  const domCity=Object.entries(cityCounts).sort((a,b)=>b[1]-a[1])[0];
+  const cityStr=domCity?domCity[0].charAt(0)+domCity[0].slice(1).toLowerCase():'';
+  const causeStr=causeLabelMap[domCause?domCause[0]:'unknown']||'Unknown';
+  const count=cl.getChildCount();
+  const html=`<div class="ctip" style="min-width:0;padding:6px 10px"><div style="font-weight:700;font-size:.82rem;color:var(--text)">${cityStr||'Multiple cities'}</div><div style="font-size:.75rem;color:var(--text2);margin-top:.15rem">${count} fire${count===1?'':'s'} · ${causeStr}</div></div>`;
+  clTip.setLatLng(cl.getLatLng()).setContent(html).addTo(map);
 });
 cluster.on('clustermouseout',function(){clTip.remove();});
 cluster.on('clusterclick',function(){clTip.remove();});
@@ -559,7 +578,7 @@ function buildMarkers(data){
   cluster.clearLayers();
   data.forEach(d=>{
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
-    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc,d.cause,d.sqft),causeKey:normCause(d.cause)});
+    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc,d.cause,d.sqft),causeKey:normCause(d.cause),cityKey:d.ci});
     const pop=document.createElement('div');
     const pt=document.createElement('div');pt.className='popup-type';pt.textContent=normType(d.tc);pop.appendChild(pt);
     const ptl=document.createElement('div');ptl.className='popup-title';ptl.textContent=d.addr||'(no address)';pop.appendChild(ptl);
