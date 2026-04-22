@@ -172,6 +172,10 @@ footer a{color:var(--accent);text-decoration:none}
           <div style="text-align:center"><svg width="22" height="22"><circle cx="11" cy="11" r="10" fill="var(--la)" fill-opacity=".85" stroke="#fff" stroke-width="1"/></svg><div style="font-size:.7rem;color:var(--text3)">$100K</div></div>
           <div style="text-align:center"><svg width="34" height="34"><circle cx="17" cy="17" r="15" fill="var(--la)" fill-opacity=".95" stroke="#fff" stroke-width="1.5"/></svg><div style="font-size:.7rem;color:var(--text3)">$1M+</div></div>
         </div>
+        <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px solid var(--border);display:flex;gap:1rem;align-items:center">
+          <div style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><svg width="12" height="12"><rect x="1" y="1" width="10" height="10" rx="1.5" fill="var(--text3)" fill-opacity=".7" stroke="#fff" stroke-width=".8"/></svg>Warehouse (≥10K sq ft)</div>
+          <div style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="var(--text3)" fill-opacity=".7" stroke="#fff" stroke-width=".8"/></svg>Building fire</div>
+        </div>
         <div style="margin-top:.4rem;color:var(--text3);font-size:.8rem">Click markers for details. Clusters expand on zoom.</div>
       </div>
       <div class="filter-panel" style="font-size:.78rem;line-height:1.55">
@@ -471,12 +475,25 @@ const NEWS_DB={
 };
 
 function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(44,Math.max(10,6+Math.log10(pl)*6.5)))}
-function makeIcon(county,size,loss,tc,cause){
+function makeIcon(county,size,loss,tc,cause,sqft){
   const c=colorMode==='cause'?(causeColors[normCause(cause)]||'#888'):colorMode==='type'?(typeColors[getFireCat(tc)]||'#888'):(cColors[county]||'#888');
   const op=loss>100000?'.95':loss>10000?'.85':'.65';
-  const glow=loss>500000?'<circle cx="'+(size/2+4)+'" cy="'+(size/2+4)+'" r="'+(size/2+3)+'" fill="'+c+'" fill-opacity=".2"/>':'';
-  return L.divIcon({className:'',iconSize:[size,size],iconAnchor:[size/2,size/2],
-    html:'<svg width="'+(size+8)+'" height="'+(size+8)+'" style="margin:-4px">'+glow+'<circle cx="'+(size/2+4)+'" cy="'+(size/2+4)+'" r="'+(size/2-1)+'" fill="'+c+'" fill-opacity="'+op+'" stroke="#fff" stroke-width="'+(loss>100000?'1.5':'0.8')+'"/></svg>'
+  const sw=loss>100000?'1.5':'0.8';
+  const pad=4;const W=size+pad*2;const cx=W/2,cy=W/2;const r=size/2-1;
+  const isWarehouse=sqft>=10000;
+  let shape,glow='';
+  if(loss>500000) glow=isWarehouse
+    ?`<rect x="${cx-r-3}" y="${cy-r-3}" width="${(r+3)*2}" height="${(r+3)*2}" rx="3" fill="${c}" fill-opacity=".18"/>`
+    :`<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="${c}" fill-opacity=".18"/>`;
+  if(isWarehouse){
+    // Square/rounded-rect = warehouse-scale (sqft ≥ 10,000)
+    shape=`<rect x="${cx-r}" y="${cy-r}" width="${r*2}" height="${r*2}" rx="2" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}"/>`;
+  } else {
+    // Circle = smaller building fire
+    shape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}" stroke-dasharray="${loss===0?'3,2':'none'}"/>`;
+  }
+  return L.divIcon({className:'',iconSize:[W,W],iconAnchor:[cx,cy],
+    html:`<svg width="${W}" height="${W}" style="overflow:visible">${glow}${shape}</svg>`
   });
 }
 const cluster=L.markerClusterGroup({maxClusterRadius:45,iconCreateFunction:function(cl){
@@ -490,7 +507,7 @@ function buildMarkers(data){
   cluster.clearLayers();
   data.forEach(d=>{
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
-    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc,d.cause),causeKey:normCause(d.cause)});
+    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc,d.cause,d.sqft),causeKey:normCause(d.cause)});
     const pop=document.createElement('div');
     const pt=document.createElement('div');pt.className='popup-type';pt.textContent=normType(d.tc);pop.appendChild(pt);
     const ptl=document.createElement('div');ptl.className='popup-title';ptl.textContent=d.addr||'(no address)';pop.appendChild(ptl);
