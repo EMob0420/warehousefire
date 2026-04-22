@@ -176,8 +176,6 @@ footer a{color:var(--accent);text-decoration:none}
     <h1>SoCal Warehouse <span>Fire Explorer</span></h1>
   </div>
   <p class="hero-tagline"><strong>654 structure fires across SoCal, 2005–2024</strong></p>
-  <hr class="stats-divider">
-  <div class="stats" id="stats"></div>
 </header>
 
 <!-- TAB NAV -->
@@ -216,6 +214,8 @@ footer a{color:var(--accent);text-decoration:none}
 
 <!-- TAB 2: FIRE EXPLORER -->
 <div class="tab-panel" id="tab-fires">
+
+<div class="stats" id="stats" style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;margin-bottom:1rem"></div>
 
 <!-- MAP ROW -->
 <div class="map-row">
@@ -733,23 +733,14 @@ function renderStats(data){
     const sb=document.createElement('div');sb.className='stat-sub';sb.textContent=s;
     d.appendChild(lb);d.appendChild(vl);d.appendChild(sb);el.appendChild(d);
   }
-  if(AppState.tab==='fires'){
-    const loss=data.reduce((s,d)=>s+d.pl,0);
-    const arson=data.filter(d=>d.cause==='Intentional (Arson)').length;
-    const inj=data.reduce((s,d)=>s+d.ffi+d.cvi,0);const deaths=data.reduce((s,d)=>s+d.ffd+d.cvd,0);
-    const wh=data.filter(isWH).length;const bld=data.filter(d=>!isWH(d)).length;
-    add('Warehouse Fires',wh.toLocaleString(),'● sqft ≥ 10,000 / PUC 891');
-    add('Building Fires',bld.toLocaleString(),'▪ all other structures');
-    add('Property Loss','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage');
-    add('Injuries / Deaths',inj+' / '+deaths,'reported casualties');
-    add('Cities',new Set(data.map(d=>d.ci)).size,'unique locations');
-  }else{
-    add('IE Vacancy','8.8%','Q1 2026 (JLL)','#fb923c');
-    add('LA Vacancy','4.6%','Q4 2025 (Lee & Assoc)','#f43f5e');
-    add('OC Vacancy','5.0%','Q4 2025 (CBRE)','#22d3ee');
-    add('IE Inventory','619.8M sf','total warehouse space','#facc15');
-    add('IE Avg Rent','$0.95/sf','NNN, Q1 2026','#a78bfa');
-  }
+  const loss=data.reduce((s,d)=>s+d.pl,0);
+  const inj=data.reduce((s,d)=>s+d.ffi+d.cvi,0);const deaths=data.reduce((s,d)=>s+d.ffd+d.cvd,0);
+  const wh=data.filter(isWH).length;const bld=data.filter(d=>!isWH(d)).length;
+  add('Warehouse Fires',wh.toLocaleString(),'● sqft ≥ 10,000 / PUC 891');
+  add('Building Fires',bld.toLocaleString(),'▪ all other structures');
+  add('Property Loss','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage');
+  add('Injuries / Deaths',inj+' / '+deaths,'reported casualties');
+  add('Cities',new Set(data.map(d=>d.ci)).size,'unique locations');
 }
 
 // ============== CHARTS ==============
