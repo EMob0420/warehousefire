@@ -443,7 +443,10 @@ function buildMarkers(data){
       na.textContent=newsItem.headline+' — '+newsItem.source;pn.appendChild(na);
       pop.appendChild(pn);
     }
-    m.bindPopup(pop);cluster.addLayer(m);
+    m.bindPopup(pop);
+    m.on('popupopen',()=>syncImageryToYear(String(d.yr)));
+    m.on('popupclose',()=>{if(!AppState.nf.year)syncImageryToYear('');});
+    cluster.addLayer(m);
   });
   map.addLayer(cluster);
 }
