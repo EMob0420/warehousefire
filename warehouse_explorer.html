@@ -194,8 +194,8 @@ footer a{color:var(--accent);text-decoration:none}
       <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Other</div>
     </div>
     <div style="display:flex;gap:.75rem;align-items:center;flex-shrink:0">
-      <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><circle cx="5" cy="5" r="4" fill="#71717a" fill-opacity=".8"/></svg>Warehouse</div>
-      <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><rect x="1" y="1" width="8" height="8" rx="2" fill="#71717a" fill-opacity=".8"/></svg>Building</div>
+      <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><circle cx="5" cy="5" r="4" fill="#71717a" fill-opacity=".85"/></svg>Warehouse</div>
+      <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><circle cx="5" cy="5" r="3" fill="#71717a" fill-opacity=".35" stroke="#fff" stroke-width="1.5"/></svg>Building</div>
     </div>
     <div class="legend-toggle">
       <span style="font-size:.65rem;color:var(--text3);font-weight:700">Color</span>
@@ -526,28 +526,19 @@ const NEWS_DB={
   '2024-12-08|SOUTH EL MONTE':{headline:'Two-alarm Amazon warehouse fire; roof collapsed; lithium-ion batteries',source:'NBC LA',url:'https://www.nbclosangeles.com/news/local/el-monte-amazon-warehouse-fire/3577475/'},
 };
 
-function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(44,Math.max(10,6+Math.log10(pl)*6.5)))}
+function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(20,Math.max(6,4+Math.log10(pl)*4)))}
 function makeIcon(county,size,loss,tc,cause,sqft){
   const cat=normCause(cause);
   const isUnknown=colorMode==='cause'&&cat==='unknown';
   const c=colorMode==='cause'?(causeColors[cat]||'#888'):colorMode==='type'?(typeColors[getFireCat(tc)]||'#888'):(cColors[county]||'#888');
-  // Unknown cause: shrink and dim so named-cause markers stand out
-  if(isUnknown){size=Math.max(6,Math.round(size*.65));}
-  const op=isUnknown?'.35':loss>100000?'.95':loss>10000?'.85':'.65';
-  const sw=loss>100000?'1.5':'0.8';
-  const pad=4;const W=size+pad*2;const cx=W/2,cy=W/2;const r=size/2-1;
+  if(isUnknown){size=Math.max(4,Math.round(size*.65));}
   const isWarehouse=sqft>=10000;
-  let shape,glow='';
-  if(loss>500000) glow=isWarehouse
-    ?`<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="${c}" fill-opacity=".18"/>`
-    :`<rect x="${cx-r-3}" y="${cy-r-3}" width="${(r+3)*2}" height="${(r+3)*2}" rx="3" fill="${c}" fill-opacity=".18"/>`;
-  if(isWarehouse){
-    // Circle = warehouse (sqft ≥ 10,000)
-    shape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}"/>`;
-  } else {
-    // Rounded rect = building fire
-    shape=`<rect x="${cx-r}" y="${cy-r}" width="${r*2}" height="${r*2}" rx="2" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}" stroke-dasharray="${loss===0?'3,2':'none'}"/>`;
-  }
+  // Warehouse: solid fill. Building: semi-transparent fill with heavier white stroke.
+  const op=isUnknown?'.3':isWarehouse?(loss>100000?'.92':loss>10000?'.82':'.68'):(loss>100000?'.55':loss>10000?'.45':'.35');
+  const sw=isWarehouse?'0.8':'2';
+  const pad=3;const W=size+pad*2;const cx=W/2,cy=W/2;const r=size/2;
+  const glow=loss>500000?`<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="${c}" fill-opacity=".15"/>`:'';
+  const shape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}"/>`;
   return L.divIcon({className:'',iconSize:[W,W],iconAnchor:[cx,cy],
     html:`<svg width="${W}" height="${W}" style="overflow:visible">${glow}${shape}</svg>`
   });
