@@ -174,7 +174,7 @@ footer a{color:var(--accent);text-decoration:none}
   <button class="action-btn primary" id="btn-export">Export CSV</button>
   <div class="fb-divider"></div>
   <div id="legend" class="legend">
-    <div id="legend-cause" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
+    <div id="legend-cause" style="display:none;gap:.75rem;flex-wrap:wrap;align-items:center">
       <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Arson</div>
       <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>Equip. Failure</div>
       <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Unintentional</div>
@@ -189,10 +189,10 @@ footer a{color:var(--accent);text-decoration:none}
       <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--oc)"></div>Orange</div>
     </div>
-    <div id="legend-type" style="display:none;gap:.75rem;flex-wrap:wrap;align-items:center">
-      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Building</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Outside</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Other</div>
+    <div id="legend-type" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
+      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Warehouse</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Building Fire</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Other Structure</div>
     </div>
     <div style="display:flex;gap:.75rem;align-items:center;flex-shrink:0">
       <div class="legend-item"><svg width="10" height="10" style="flex-shrink:0"><circle cx="5" cy="5" r="4" fill="#71717a" fill-opacity=".85"/></svg>Warehouse</div>
@@ -200,9 +200,9 @@ footer a{color:var(--accent);text-decoration:none}
     </div>
     <div class="legend-toggle">
       <span style="font-size:.65rem;color:var(--text3);font-weight:700">Color</span>
-      <button class="legend-toggle-btn active" id="color-cause">Cause</button>
+      <button class="legend-toggle-btn" id="color-cause">Cause</button>
       <button class="legend-toggle-btn" id="color-county">County</button>
-      <button class="legend-toggle-btn" id="color-type">Type</button>
+      <button class="legend-toggle-btn active" id="color-type">Type</button>
     </div>
   </div>
   <div style="font-size:.68rem;color:var(--text3);padding:.3rem .7rem .35rem;border-top:1px solid var(--border);width:100%;font-style:italic">Note: Many FEMA records have incomplete cause data — unknown-cause markers are shown smaller and dimmed.</div>
@@ -448,12 +448,12 @@ function syncImageryToYear(year){
 }
 
 // ============== COLOR MODE ==============
-let colorMode='cause';
-const typeColors={building:'#f97316',outside:'#a855f7',other:'#60a5fa'};
+let colorMode='type';
+const typeColors={warehouse:'#f97316',building:'#ef4444',other:'#3b82f6'};
 const causeColors={arson:'#ef4444',equipment:'#eab308',unintentional:'#22d3ee',investigating:'#94a3b8',undetermined:'#6b7280',other:'#a855f7',unknown:'#3f3f46'};
-function getFireCat(tc){
+function getFireCat(tc,sqft){
+  if(sqft>=10000) return 'warehouse';
   if(['111','112','115'].includes(tc)) return 'building';
-  if(['118','150','151','152','154','155','160','161','162'].includes(tc)) return 'outside';
   return 'other';
 }
 function normCause(cause){
@@ -531,7 +531,7 @@ function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(20,Mat
 function makeIcon(county,size,loss,tc,cause,sqft){
   const cat=normCause(cause);
   const isUnknown=colorMode==='cause'&&cat==='unknown';
-  const c=colorMode==='cause'?(causeColors[cat]||'#888'):colorMode==='type'?(typeColors[getFireCat(tc)]||'#888'):(cColors[county]||'#888');
+  const c=colorMode==='cause'?(causeColors[cat]||'#888'):colorMode==='type'?(typeColors[getFireCat(tc,sqft)]||'#888'):(cColors[county]||'#888');
   if(isUnknown){size=Math.max(4,Math.round(size*.65));}
   const isWarehouse=sqft>=10000;
   // Warehouse: solid fill. Building: semi-transparent fill with heavier white stroke.
