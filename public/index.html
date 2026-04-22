@@ -24,14 +24,14 @@ body{background:var(--bg);color:var(--text);font-family:'Sora',system-ui,sans-se
 .container{max-width:1400px;margin:0 auto;padding:1.25rem 1.5rem}
 /* ── HERO ── */
 header{padding-bottom:1.1rem;border-bottom:1px solid var(--border);margin-bottom:.75rem}
-.hero-top{display:flex;align-items:center;gap:1rem;margin-bottom:.65rem}
-.hero-top img{height:52px;border-radius:6px;flex-shrink:0}
+.hero-top{display:flex;align-items:center;gap:1rem;margin-bottom:.65rem;justify-content:center}
+.hero-top img{height:80px;border-radius:6px;flex-shrink:0}
 .hero-top h1{font-size:1.5rem;font-weight:800;line-height:1.15}
 .hero-top h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero-tagline{font-size:1rem;color:var(--text2);font-weight:400;max-width:680px;line-height:1.5;margin-bottom:.7rem}
+.hero-tagline{font-size:1.125rem;color:var(--text2);font-weight:400;line-height:1.5;margin-bottom:.7rem;text-align:center}
 .hero-tagline strong{color:var(--text)}
 /* stat pills in header */
-.stats{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center}
+.stats{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;justify-content:center}
 .stat{display:flex;flex-direction:column;gap:.05rem}
 .stat-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text3);font-weight:700}
 .stat-val{font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--text);line-height:1.2}
@@ -111,6 +111,13 @@ td{padding:.45rem .6rem;color:var(--text2)}
 .popup-news a{font-size:.78rem;color:#fb923c;text-decoration:none;line-height:1.4;display:block}
 .popup-news a:hover{text-decoration:underline}
 .popup-news-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:#71717a;margin-bottom:.15rem;font-weight:600}
+.cl-popup-header{font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:.35rem}
+.cl-popup-list{max-height:220px;overflow-y:auto;margin-top:.25rem}
+.cl-popup-row{padding:.3rem 0;border-bottom:1px solid rgba(63,63,70,.4);font-size:.8rem}
+.cl-popup-row:last-child{border-bottom:none}
+.cl-popup-addr{font-weight:600;color:var(--text);line-height:1.3}
+.cl-popup-meta{color:var(--text2);font-size:.73rem;margin-top:.08rem}
+.cl-popup-loss{font-family:'Space Mono',monospace;font-size:.73rem;color:var(--accent)}
 .legend-toggle{display:flex;align-items:center;gap:.4rem;margin-left:auto}
 .legend-toggle-btn{padding:.25rem .7rem;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
 .legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
@@ -546,7 +553,7 @@ function makeIcon(county,size,loss,tc,cause,sqft){
   });
 }
 function clusterPx(count){if(count===1)return 12;if(count<=5)return 18;if(count<=15)return 26;if(count<=50)return 36;return 48;}
-const cluster=L.markerClusterGroup({maxClusterRadius:45,iconCreateFunction:function(cl){
+const cluster=L.markerClusterGroup({maxClusterRadius:45,zoomToBoundsOnClick:false,spiderfyOnMaxZoom:false,iconCreateFunction:function(cl){
   const markers=cl.getAllChildMarkers();
   const counts={};
   markers.forEach(m=>{const ck=m.options.causeKey||'unknown';counts[ck]=(counts[ck]||0)+1;});
@@ -585,13 +592,35 @@ cluster.on('clustermouseover',function(e){
   clTip.setLatLng(cl.getLatLng()).setContent(html).addTo(map);
 });
 cluster.on('clustermouseout',function(){clTip.remove();});
-cluster.on('clusterclick',function(){clTip.remove();});
+cluster.on('clusterclick',function(e){
+  clTip.remove();
+  const cl=e.layer;
+  const incidents=cl.getAllChildMarkers().map(m=>m.options.nfirsData).filter(Boolean);
+  incidents.sort((a,b)=>b.dt.localeCompare(a.dt));
+  const wrap=document.createElement('div');
+  const hdr=document.createElement('div');hdr.className='cl-popup-header';
+  hdr.textContent=incidents.length+' incident'+(incidents.length===1?'':'s');wrap.appendChild(hdr);
+  const list=document.createElement('div');list.className='cl-popup-list';
+  incidents.forEach(d=>{
+    const row=document.createElement('div');row.className='cl-popup-row';
+    const addr=document.createElement('div');addr.className='cl-popup-addr';addr.textContent=d.addr||'(no address)';row.appendChild(addr);
+    const causeColor=d.cause==='Intentional (Arson)'?'#ef4444':'var(--text2)';
+    const meta=document.createElement('div');meta.className='cl-popup-meta';
+    meta.innerHTML=d.dt+' &middot; <span style="color:'+causeColor+'">'+(d.cause||'Unknown cause')+'</span>';row.appendChild(meta);
+    const loss=document.createElement('div');loss.className='cl-popup-loss';
+    loss.textContent=d.pl>0?'$'+d.pl.toLocaleString():'No loss reported';if(d.pl<=0)loss.style.color='var(--text3)';row.appendChild(loss);
+    list.appendChild(row);
+  });
+  wrap.appendChild(list);
+  L.popup({maxWidth:280,minWidth:220}).setLatLng(cl.getLatLng()).setContent(wrap).openOn(map);
+  e.originalEvent.stopPropagation();
+});
 
 function buildMarkers(data){
   cluster.clearLayers();
   data.forEach(d=>{
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
-    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc,d.cause,d.sqft),causeKey:normCause(d.cause),cityKey:d.ci});
+    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc,d.cause,d.sqft),causeKey:normCause(d.cause),cityKey:d.ci,nfirsData:d});
     const pop=document.createElement('div');
     const pt=document.createElement('div');pt.className='popup-type';pt.textContent=normType(d.tc);pop.appendChild(pt);
     const ptl=document.createElement('div');ptl.className='popup-title';ptl.textContent=d.addr||'(no address)';pop.appendChild(ptl);
