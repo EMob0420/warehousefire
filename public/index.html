@@ -22,39 +22,42 @@
 html{font-size:18px}
 body{background:var(--bg);color:var(--text);font-family:'Sora',system-ui,sans-serif;min-height:100vh}
 .container{max-width:1400px;margin:0 auto;padding:1.25rem 1.5rem}
-header{display:flex;align-items:flex-end;justify-content:space-between;padding-bottom:1rem;border-bottom:1px solid var(--border);margin-bottom:1rem;flex-wrap:wrap;gap:.75rem}
-.hdr-left h1{font-size:1.6rem;font-weight:800;line-height:1.2}
-.hdr-left h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hdr-left p{color:var(--text2);font-size:.9rem;margin-top:.25rem;max-width:550px}
-.hdr-right{display:flex;gap:.5rem}
-.tab-btn{padding:.5rem 1.2rem;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
-.tab-btn:hover{border-color:var(--text3)}
-.tab-btn.active{background:var(--accent);color:white;border-color:var(--accent)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.6rem;margin-bottom:1rem}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem .85rem;transition:transform .12s}
-.stat:hover{transform:translateY(-1px)}
-.stat-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.18em;color:var(--text3);font-weight:600}
-.stat-val{font-family:'Space Mono',monospace;font-size:1.8rem;font-weight:700;line-height:1.2;margin-top:.1rem}
-.stat-sub{font-size:.8rem;color:var(--text2);margin-top:.1rem}
-.legend{display:flex;gap:1.25rem;flex-wrap:wrap;margin-bottom:.75rem}
-.legend-item{display:flex;align-items:center;gap:.3rem;font-size:.85rem;color:var(--text2)}
-.legend-dot{width:9px;height:9px;border-radius:3px}
-.split{display:grid;grid-template-columns:1fr 280px;gap:1rem;margin-bottom:1rem}
-@media(max-width:900px){.split{grid-template-columns:1fr}}
-.map-pane{height:460px;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
-#map{width:100%;height:100%;z-index:1}
-.sidebar{display:flex;flex-direction:column;gap:.6rem}
-.filter-panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem}
-.filter-panel h3{font-size:.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);margin-bottom:.6rem}
-.filter-group{margin-bottom:.6rem}
-.filter-group label{display:block;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:.2rem;font-weight:600}
-select,input[type=search]{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:.5rem .6rem;font-family:inherit;font-size:.9rem;outline:none;transition:border-color .15s}
-select:focus,input[type=search]:focus{border-color:var(--accent)}
-.btn-row{display:flex;gap:.4rem;margin-top:.5rem}
-.action-btn{flex:1;padding:.5rem;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;transition:all .12s}
+/* ── HERO ── */
+header{padding-bottom:1.1rem;border-bottom:1px solid var(--border);margin-bottom:.75rem}
+.hero-top{display:flex;align-items:center;gap:1rem;margin-bottom:.65rem}
+.hero-top img{height:52px;border-radius:6px;flex-shrink:0}
+.hero-top h1{font-size:1.5rem;font-weight:800;line-height:1.15}
+.hero-top h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-tagline{font-size:1rem;color:var(--text2);font-weight:400;max-width:680px;line-height:1.5;margin-bottom:.7rem}
+.hero-tagline strong{color:var(--text)}
+/* stat pills in header */
+.stats{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center}
+.stat{display:flex;flex-direction:column;gap:.05rem}
+.stat-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text3);font-weight:700}
+.stat-val{font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--text);line-height:1.2}
+.stat-sub{font-size:.72rem;color:var(--text3)}
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding:.55rem .7rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:.6rem}
+.filter-bar label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:700;white-space:nowrap}
+.filter-bar select,.filter-bar input[type=search]{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:.3rem .5rem;font-family:inherit;font-size:.82rem;outline:none;transition:border-color .15s;width:auto}
+.filter-bar select:focus,.filter-bar input[type=search]:focus{border-color:var(--accent)}
+.filter-bar input[type=search]{width:130px}
+.fb-divider{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.action-btn{padding:.3rem .75rem;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .12s}
 .action-btn:hover{border-color:var(--accent);color:var(--accent)}
 .action-btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
 .action-btn.primary:hover{opacity:.85}
+/* ── LEGEND (inside filter bar) ── */
+.legend{display:flex;align-items:center;gap:.85rem;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--text2)}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.legend-toggle{display:flex;align-items:center;gap:.3rem;margin-left:.25rem}
+.legend-toggle-btn{padding:.2rem .55rem;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:.68rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
+.legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
+/* ── MAP ── */
+.map-wrap{height:600px;border-radius:10px;overflow:hidden;border:1px solid var(--border);position:relative;margin-bottom:1rem}
+#map{width:100%;height:100%;z-index:1}
+/* ── CHARTS ── */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
 @media(max-width:850px){.charts{grid-template-columns:1fr}}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem}
@@ -63,7 +66,21 @@ select:focus,input[type=search]:focus{border-color:var(--accent)}
 .card .sub{font-size:.82rem;color:var(--text3);margin-bottom:.85rem}
 .chart-wrap{position:relative;width:100%;height:260px}
 .card.full .chart-wrap{height:300px}
+/* ── TABLE ── */
+.table-section{margin-bottom:1.5rem}
 .table-section h2{font-size:1rem;font-weight:700;margin-bottom:.5rem}
+/* ── MARKET ACCORDION ── */
+.market-accordion{border:1px solid var(--border);border-radius:8px;margin-bottom:1.5rem;overflow:hidden}
+.market-accordion summary{padding:.75rem 1rem;background:var(--surface);cursor:pointer;font-size:.85rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:.5rem;list-style:none;user-select:none}
+.market-accordion summary:hover{color:var(--text)}
+.market-accordion summary::after{content:'▸';margin-left:auto;font-size:.75rem;transition:transform .2s}
+.market-accordion[open] summary::after{transform:rotate(90deg)}
+.market-accordion-body{padding:1rem;display:grid;gap:.75rem}
+/* ── TABS (hidden — kept for JS compat) ── */
+.tab-btn{display:none}
+/* ── MISC ── */
+select,input[type=search]{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:.5rem .6rem;font-family:inherit;font-size:.9rem;outline:none;transition:border-color .15s}
+.table-wrap{max-height:480px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
 .table-wrap{max-height:480px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
 .table-wrap::-webkit-scrollbar{width:5px}
 .table-wrap::-webkit-scrollbar-track{background:var(--surface)}
@@ -99,6 +116,16 @@ td{padding:.45rem .6rem;color:var(--text2)}
 .legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
 .marker-cluster,.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background:transparent!important;border:none!important;box-shadow:none!important}
 .marker-cluster div,.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:transparent!important;border:none!important;box-shadow:none!important}
+.cause-tooltip{background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:8px!important;padding:0!important;box-shadow:0 6px 24px rgba(0,0,0,.5)!important}
+.cause-tooltip::before{display:none!important}
+.ctip{min-width:170px;padding:8px 10px;font-family:'Sora',sans-serif}
+.ctip-total{font-weight:700;font-size:.85rem;margin-bottom:.45rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.3rem}
+.ctip-row{display:flex;align-items:center;gap:.4rem;font-size:.75rem;margin-bottom:.2rem}
+.ctip-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.ctip-lbl{color:var(--text2);flex:1;white-space:nowrap}
+.ctip-bar-wrap{width:50px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.ctip-bar-fill{height:100%;border-radius:3px}
+.ctip-n{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--text);min-width:20px;text-align:right}
 .base-toggle-btn{background:rgba(9,9,11,.82);color:#a1a1aa;border:1px solid #3f3f46;border-radius:5px;padding:5px 10px;font-size:.78rem;font-family:'Space Mono',monospace;cursor:pointer;transition:all .15s;white-space:nowrap}
 .base-toggle-btn:hover{color:#fafafa;border-color:#71717a}
 #img-info{position:absolute;bottom:28px;left:8px;z-index:800;background:rgba(9,9,11,.8);color:#71717a;padding:3px 8px;border-radius:4px;font-size:.7rem;font-family:'Space Mono',monospace;pointer-events:none;display:none}
@@ -108,143 +135,119 @@ footer a{color:var(--accent);text-decoration:none}
 </head>
 <body>
 <div class="container">
+
+<!-- HERO -->
 <header>
-  <div style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0">
-    <img src="logo.png" alt="SoCal Earth - Pitzer College - Robert Redford Conservancy" style="height:60px;border-radius:6px;flex-shrink:0">
-    <div class="hdr-left">
-      <h1>SoCal Warehouse <span>Fire Explorer</span></h1>
-      <p>654 warehouse building fires (2005-2024) from NFIRS — filtered to Property Use Code 891 (Warehouse) + Incident Type 111 (Building Fire). Excludes storage yard / outside fires. Includes market vacancy data and major tenant locations.</p>
-    </div>
+  <div class="hero-top">
+    <img src="logo.png" alt="SoCal Earth — Pitzer College Robert Redford Conservancy">
+    <h1>SoCal Warehouse <span>Fire Explorer</span></h1>
   </div>
-  <div class="hdr-right" id="tabs"></div>
+  <p class="hero-tagline"><strong>654 warehouse structure fires</strong> across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024 — where they happened, how large they were, and what caused them.</p>
+  <div class="stats" id="stats"></div>
 </header>
-<div class="stats" id="stats"></div>
-<div class="legend" id="legend">
-  <div id="legend-cause" style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center">
-    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Arson</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>Equipment Failure</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Unintentional</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Under Investigation</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div>Undetermined</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Other / Nature</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#3f3f46"></div>Unknown</div>
-  </div>
-  <div id="legend-county" style="display:none;gap:1.25rem;flex-wrap:wrap;align-items:center">
-    <div class="legend-item"><div class="legend-dot" style="background:var(--la)"></div>Los Angeles</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--sb)"></div>San Bernardino</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--oc)"></div>Orange</div>
-  </div>
-  <div id="legend-type" style="display:none;gap:1.25rem;flex-wrap:wrap;align-items:center">
-    <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Building / Structure</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Outside / Storage</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Vehicle / Other</div>
-  </div>
-  <div class="legend-toggle">
-    <span style="font-size:.72rem;color:var(--text3);font-weight:600">Color by</span>
-    <button class="legend-toggle-btn active" id="color-cause">Cause</button>
-    <button class="legend-toggle-btn" id="color-county">County</button>
-    <button class="legend-toggle-btn" id="color-type">Fire Type</button>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <label>County</label>
+  <select id="f-county"><option value="">All Counties</option><option>Los Angeles</option><option>San Bernardino</option><option>Riverside</option><option>Orange</option></select>
+  <label>Year</label>
+  <select id="f-year"><option value="">All Years</option><option>2002</option><option>2005</option><option>2006</option><option>2007</option><option>2008</option><option>2009</option><option>2010</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
+  <label>Size</label>
+  <select id="f-sqft"><option value="">All Sizes</option><option value="small">Under 10K sq ft</option><option value="medium">10K–50K sq ft</option><option value="large">50K–200K sq ft</option><option value="mega">200K+ sq ft</option></select>
+  <input type="search" id="f-search" placeholder="City or address…">
+  <button class="action-btn" id="btn-reset">Reset</button>
+  <button class="action-btn primary" id="btn-export">Export CSV</button>
+  <div class="fb-divider"></div>
+  <div id="legend" class="legend">
+    <div id="legend-cause" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Arson</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>Equip. Failure</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Unintentional</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Investigating</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div>Undetermined</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Other</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3f3f46"></div>Unknown</div>
+    </div>
+    <div id="legend-county" style="display:none;gap:.75rem;flex-wrap:wrap;align-items:center">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--la)"></div>LA</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--sb)"></div>San Bernardino</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--oc)"></div>Orange</div>
+    </div>
+    <div id="legend-type" style="display:none;gap:.75rem;flex-wrap:wrap;align-items:center">
+      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Building</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Outside</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Other</div>
+    </div>
+    <div class="legend-toggle">
+      <span style="font-size:.65rem;color:var(--text3);font-weight:700">Color</span>
+      <button class="legend-toggle-btn active" id="color-cause">Cause</button>
+      <button class="legend-toggle-btn" id="color-county">County</button>
+      <button class="legend-toggle-btn" id="color-type">Type</button>
+    </div>
   </div>
 </div>
 
-<!-- WAREHOUSE FIRES TAB -->
+<!-- MAP — full width -->
+<div class="map-wrap"><div id="map"></div><div id="img-info"></div></div>
+
+<!-- hidden tab divs kept for JS compatibility -->
+<div id="tabs" style="display:none"></div>
 <div class="panel active" id="panel-fires">
-  <div class="split">
-    <div class="map-pane" style="position:relative"><div id="map"></div><div id="img-info"></div></div>
-    <div class="sidebar">
-      <div class="filter-panel">
-        <h3>Filters</h3>
-        <div class="filter-group"><label>County</label><select id="f-county"><option value="">All Counties</option><option>Los Angeles</option><option>San Bernardino</option><option>Riverside</option><option>Orange</option></select></div>
-        <div class="filter-group"><label>Year</label><select id="f-year"><option value="">All Years</option><option>2002</option><option>2005</option><option>2006</option><option>2007</option><option>2008</option><option>2009</option><option>2010</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select></div>
-        <div class="filter-group"><label>Building Size</label><select id="f-sqft"><option value="">All Sizes</option><option value="small">Under 10,000 sq ft</option><option value="medium">10,000 - 50,000 sq ft</option><option value="large">50,000 - 200,000 sq ft</option><option value="mega">200,000+ sq ft</option></select></div>
-        <div class="filter-group"><label>Search</label><input type="search" id="f-search" placeholder="City, address..."></div>
-        <div class="btn-row">
-          <button class="action-btn" id="btn-reset">Reset</button>
-          <button class="action-btn primary" id="btn-export">Export CSV</button>
-        </div>
-      </div>
-      <div class="filter-panel">
-        <h3>Marker Size = Property Loss</h3>
-        <div style="display:flex;align-items:center;gap:.6rem;margin-top:.3rem">
-          <div style="text-align:center"><svg width="8" height="8"><circle cx="4" cy="4" r="3" fill="var(--text3)" fill-opacity=".5" stroke="#fff" stroke-width=".5"/></svg><div style="font-size:.7rem;color:var(--text3)">$0</div></div>
-          <div style="text-align:center"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="var(--la)" fill-opacity=".7" stroke="#fff" stroke-width=".7"/></svg><div style="font-size:.7rem;color:var(--text3)">$10K</div></div>
-          <div style="text-align:center"><svg width="22" height="22"><circle cx="11" cy="11" r="10" fill="var(--la)" fill-opacity=".85" stroke="#fff" stroke-width="1"/></svg><div style="font-size:.7rem;color:var(--text3)">$100K</div></div>
-          <div style="text-align:center"><svg width="34" height="34"><circle cx="17" cy="17" r="15" fill="var(--la)" fill-opacity=".95" stroke="#fff" stroke-width="1.5"/></svg><div style="font-size:.7rem;color:var(--text3)">$1M+</div></div>
-        </div>
-        <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px solid var(--border);display:flex;gap:1rem;align-items:center">
-          <div style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><svg width="12" height="12"><rect x="1" y="1" width="10" height="10" rx="1.5" fill="var(--text3)" fill-opacity=".7" stroke="#fff" stroke-width=".8"/></svg>Warehouse (≥10K sq ft)</div>
-          <div style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="var(--text3)" fill-opacity=".7" stroke="#fff" stroke-width=".8"/></svg>Building fire</div>
-        </div>
-        <div style="margin-top:.4rem;color:var(--text3);font-size:.8rem">Click markers for details. Clusters expand on zoom.</div>
-      </div>
-      <div class="filter-panel" style="font-size:.78rem;line-height:1.55">
-        <h3>Data Scope</h3>
-        <div style="margin-top:.35rem">
-          <div style="color:var(--text2);margin-bottom:.4rem">Filtered from NFIRS using:</div>
-          <div style="display:flex;flex-direction:column;gap:.25rem">
-            <div><span style="font-family:'Space Mono',monospace;font-size:.72rem;background:rgba(251,146,60,.12);padding:.1rem .35rem;border-radius:3px;color:#fb923c">PUC = 891</span> <span style="color:var(--text2)">Warehouse property</span></div>
-            <div><span style="font-family:'Space Mono',monospace;font-size:.72rem;background:rgba(34,211,238,.1);padding:.1rem .35rem;border-radius:3px;color:#22d3ee">INC = 111</span> <span style="color:var(--text2)">Building fire only</span></div>
-          </div>
-        </div>
-        <div style="margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--border)">
-          <div style="color:var(--text3);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:.3rem">Excluded</div>
-          <div style="color:var(--text2)">Storage yard &amp; outside fires (NFIRS types 150–162) are <strong style="color:var(--text)">not included</strong> — only fires in enclosed warehouse structures qualify under INC 111.</div>
-        </div>
-        <div style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)">
-          <div style="color:var(--text3);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:.3rem">Coverage gap</div>
-          <div style="color:var(--text2)">Open-air pallet yards, loading dock yard fires, and outdoor storage compound fires are undercounted here. These appear in NFIRS as type 150–162 and would require a separate PUC+INC query to capture.</div>
-        </div>
+
+<!-- CHARTS -->
+<div class="charts">
+  <div class="card full">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+      <div><h2 id="main-chart-title">Fires by Year</h2><div class="sub" id="main-chart-sub">Annual warehouse building fire count by county (2005–2024)</div></div>
+      <div style="display:flex;gap:.4rem">
+        <button class="action-btn" id="view-year" style="background:var(--accent);color:white;border-color:var(--accent)">By Year</button>
+        <button class="action-btn" id="view-sqft">By Size</button>
       </div>
     </div>
+    <div class="chart-wrap"><canvas id="ch-year"></canvas></div>
   </div>
-  <div class="charts">
-    <div class="card full">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
-        <div><h2 id="main-chart-title">Warehouse Fires by Building Size</h2><div class="sub" id="main-chart-sub">Number of fires by warehouse square footage, stacked by county</div></div>
-        <div style="display:flex;gap:.4rem">
-          <button class="action-btn" id="view-sqft" style="background:var(--accent);color:white;border-color:var(--accent)">By Size</button>
-          <button class="action-btn" id="view-year">By Year</button>
-        </div>
-      </div>
-      <div class="chart-wrap"><canvas id="ch-year"></canvas></div>
-    </div>
-    <div class="card"><h2>By County</h2><div class="sub">Total incidents per county</div><div class="chart-wrap"><canvas id="ch-county"></canvas></div></div>
-    <div class="card"><h2>Top Cities</h2><div class="sub">Most warehouse fire incidents</div><div class="chart-wrap"><canvas id="ch-city"></canvas></div></div>
-    <div class="card"><h2>How Fires Started (WHY)</h2><div class="sub">The reason or intent behind the fire — why it happened</div><div class="chart-wrap"><canvas id="ch-cause"></canvas></div></div>
-    <div class="card"><h2>Heat Source (WHAT)</h2><div class="sub">What physically made the spark or heat that started the fire</div><div class="chart-wrap"><canvas id="ch-heat"></canvas></div></div>
-  </div>
-  <div class="table-section">
-    <h2>All Warehouse Incidents</h2>
-    <div class="table-wrap"><table><thead id="nfirs-thead"></thead><tbody id="nfirs-tbody"></tbody></table></div>
-  </div>
+  <div class="card"><h2>How Fires Started</h2><div class="sub">Cause of ignition — why it happened</div><div class="chart-wrap"><canvas id="ch-cause"></canvas></div></div>
+  <div class="card"><h2>Heat Source</h2><div class="sub">What physically ignited the fire</div><div class="chart-wrap"><canvas id="ch-heat"></canvas></div></div>
+  <div class="card"><h2>By County</h2><div class="sub">Total incidents per county</div><div class="chart-wrap"><canvas id="ch-county"></canvas></div></div>
+  <div class="card"><h2>Top Cities</h2><div class="sub">Most warehouse fire incidents</div><div class="chart-wrap"><canvas id="ch-city"></canvas></div></div>
 </div>
 
-<!-- MARKET DATA TAB -->
-<div class="panel" id="panel-market">
-  <div class="charts">
+<!-- TABLE -->
+<div class="table-section">
+  <h2>All Warehouse Incidents</h2>
+  <div class="table-wrap"><table><thead id="nfirs-thead"></thead><tbody id="nfirs-tbody"></tbody></table></div>
+</div>
+
+</div><!-- end panel-fires -->
+
+<!-- MARKET DATA — secondary, collapsed -->
+<details class="market-accordion">
+  <summary>📊 Market Context — vacancy rates, major tenants &amp; sources</summary>
+  <div class="market-accordion-body">
+    <div class="charts" style="margin:0">
+      <div class="panel active" id="panel-market">
     <div class="card full"><h2>Warehouse Vacancy Rates — Q1 2026</h2><div class="sub">Industrial vacancy by submarket. Sources: JLL, CBRE, Savills, Lee & Associates</div><div class="chart-wrap"><canvas id="ch-vacancy"></canvas></div></div>
-    <div class="card full"><h2>Vacancy Trend (2020-2026)</h2><div class="sub">Quarterly vacancy rate. Source: JLL, CBRE, Cushman & Wakefield</div><div class="chart-wrap"><canvas id="ch-vac-trend"></canvas></div></div>
-  </div>
-  <div class="card full" style="margin-bottom:1rem;padding:1.5rem">
-    <h2>Major Warehouse Tenants</h2>
-    <div class="sub">Key distribution center operators in the region</div>
-    <div class="table-wrap" style="max-height:400px"><table><thead><tr><th>Company</th><th>Facility</th><th>City</th><th>County</th><th>Details</th></tr></thead><tbody id="tenant-tbody"></tbody></table></div>
-  </div>
-  <div class="card full" style="margin-bottom:1rem;padding:1.5rem">
-    <h2>Market Summary by Region</h2>
-    <div class="sub">Latest available industrial market data</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.75rem;margin-top:.75rem" id="market-cards"></div>
-  </div>
-  <div class="card full" style="padding:1.5rem">
-    <h2>Sources & Citations</h2>
-    <div id="sources-list" style="font-size:.72rem;color:var(--text2);line-height:1.8;column-count:2;column-gap:2rem"></div>
-  </div>
-</div>
+    <div class="card full"><h2>Vacancy Trend (2020–2026)</h2><div class="sub">Quarterly vacancy rate. Source: JLL, CBRE, Cushman &amp; Wakefield</div><div class="chart-wrap"><canvas id="ch-vac-trend"></canvas></div></div>
+    <div class="card full" style="padding:1.5rem">
+      <h2>Major Warehouse Tenants</h2><div class="sub">Key distribution center operators in the region</div>
+      <div class="table-wrap" style="max-height:360px"><table><thead><tr><th>Company</th><th>Facility</th><th>City</th><th>County</th><th>Details</th></tr></thead><tbody id="tenant-tbody"></tbody></table></div>
+    </div>
+    <div class="card full" style="padding:1.5rem">
+      <h2>Market Summary by Region</h2><div class="sub">Latest available industrial market data</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.75rem;margin-top:.75rem" id="market-cards"></div>
+    </div>
+    <div class="card full" style="padding:1.5rem">
+      <h2>Sources &amp; Citations</h2>
+      <div id="sources-list" style="font-size:.72rem;color:var(--text2);line-height:1.8;column-count:2;column-gap:2rem"></div>
+    </div>
+  </div><!-- end panel-market -->
+    </div><!-- end market-accordion-body charts -->
+  </div><!-- end market-accordion-body -->
+</details><!-- end market-accordion -->
 
-<footer>
-  Data: <a href="https://www.fema.gov/about/openfema/data-sets/fema-usfa-nfirs-annual-data" target="_blank">NFIRS Public Data (USFA/FEMA)</a> — Property Use 891 (Warehouse)<br>
-  Counties: Los Angeles, San Bernardino, Riverside, Orange. 2005-2024 — building fires only (code 111) (2,154 records). Market data: Q1 2026.
+<footer style="text-align:center;padding:1.5rem 0 1rem;color:var(--text3);font-size:.75rem;border-top:1px solid var(--border);margin-top:1rem">
+  Data: <a href="https://www.fema.gov/about/openfema/data-sets/fema-usfa-nfirs-annual-data" target="_blank" style="color:var(--accent);text-decoration:none">NFIRS Public Data (USFA/FEMA)</a> · PUC 891 (Warehouse) + INC 111 (Building Fire) · Storage yard fires (INC 150–162) excluded · 2005–2024
 </footer>
 </div>
 
@@ -438,6 +441,32 @@ function normCause(cause){
   if(cause==='Undetermined') return 'undetermined';
   return 'other';
 }
+const causeLabelMap={arson:'Arson',equipment:'Equipment Failure',unintentional:'Unintentional',investigating:'Under Investigation',undetermined:'Undetermined',other:'Other / Nature',unknown:'Unknown'};
+
+function makeSimpleDot(count,counts){
+  const dominant=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  const color=causeColors[dominant?dominant[0]:'unknown']||'#888';
+  const size=Math.round(Math.min(58,Math.max(20,12+Math.log10(count)*15)));
+  const cx=size/2,cy=size/2,r=size/2-1.5;
+  const svg=`<svg width="${size}" height="${size}" style="filter:drop-shadow(0 1px 4px rgba(0,0,0,.6))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" fill-opacity=".88" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${count>99?9:10}" font-weight="700" font-family="Space Mono,monospace">${count}</text></svg>`;
+  return L.divIcon({html:svg,className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]});
+}
+
+function buildClusterTip(cl){
+  const total=cl.getChildCount();
+  const markers=cl.getAllChildMarkers();
+  const counts={};
+  markers.forEach(m=>{const ck=m.options.causeKey||'unknown';counts[ck]=(counts[ck]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  let html=`<div class="ctip"><div class="ctip-total">${total} fires</div>`;
+  sorted.forEach(([cat,cnt])=>{
+    const pct=Math.round(cnt/total*100);
+    html+=`<div class="ctip-row"><span class="ctip-dot" style="background:${causeColors[cat]||'#888'}"></span><span class="ctip-lbl">${causeLabelMap[cat]||cat}</span><span class="ctip-bar-wrap"><span class="ctip-bar-fill" style="width:${pct}%;background:${causeColors[cat]||'#888'}"></span></span><span class="ctip-n">${cnt}</span></div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
 function makePieCluster(count,counts){
   const size=count>99?54:count>9?46:38;
   const r=size/2-3;const cx=size/2,cy=size/2;
@@ -500,8 +529,18 @@ const cluster=L.markerClusterGroup({maxClusterRadius:45,iconCreateFunction:funct
   const markers=cl.getAllChildMarkers();
   const counts={};
   markers.forEach(m=>{const ck=m.options.causeKey||'unknown';counts[ck]=(counts[ck]||0)+1;});
-  return makePieCluster(cl.getChildCount(),counts);
+  const count=cl.getChildCount();
+  const zoom=map.getZoom();
+  return (zoom>=11||count<=10)?makePieCluster(count,counts):makeSimpleDot(count,counts);
 }});
+
+// Hover tooltip on clusters
+const clTip=L.tooltip({direction:'top',permanent:false,opacity:1,className:'cause-tooltip'});
+cluster.on('clustermouseover',function(e){
+  clTip.setLatLng(e.layer.getLatLng()).setContent(buildClusterTip(e.layer)).addTo(map);
+});
+cluster.on('clustermouseout',function(){clTip.remove();});
+cluster.on('clusterclick',function(){clTip.remove();});
 
 function buildMarkers(data){
   cluster.clearLayers();
@@ -546,11 +585,11 @@ function renderStats(data){
   if(AppState.tab==='fires'){
     const loss=data.reduce((s,d)=>s+d.pl,0);const bldg=data.filter(d=>d.tc==='111').length;
     const inj=data.reduce((s,d)=>s+d.ffi+d.cvi,0);const deaths=data.reduce((s,d)=>s+d.ffd+d.cvd,0);
-    add('Incidents',data.length.toLocaleString(),'warehouse incidents','#f43f5e');
-    add('Building Fires',bldg.toLocaleString(),'structure fires (111)','#fb923c');
-    add('Property Loss','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage','#facc15');
-    add('Injuries / Deaths',inj+' / '+deaths,'reported casualties','#a78bfa');
-    add('Cities',new Set(data.map(d=>d.ci)).size,'unique locations','#22d3ee');
+    add('Incidents',data.length.toLocaleString(),'warehouse incidents');
+    add('Building Fires',bldg.toLocaleString(),'structure fires (111)');
+    add('Property Loss','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage');
+    add('Injuries / Deaths',inj+' / '+deaths,'reported casualties');
+    add('Cities',new Set(data.map(d=>d.ci)).size,'unique locations');
   }else{
     add('IE Vacancy','8.8%','Q1 2026 (JLL)','#fb923c');
     add('LA Vacancy','4.6%','Q4 2025 (Lee & Assoc)','#f43f5e');
@@ -570,7 +609,7 @@ function initCharts(){
   charts.cause=new Chart(document.getElementById('ch-cause'),{type:'doughnut',data:{labels:[],datasets:[{data:[],backgroundColor:['#ef4444','#fb923c','#facc15','#22d3ee','#a78bfa','#34d399','#f472b6'],borderColor:'#18181b',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'45%',plugins:{legend:{position:'right',labels:{padding:8,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',boxWidth:8}}}}});
   charts.heat=new Chart(document.getElementById('ch-heat'),{type:'bar',data:{labels:[],datasets:[{data:[],backgroundColor:'rgba(251,146,60,.6)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{display:false}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
 }
-let mainChartView='sqft';
+let mainChartView='year';
 document.getElementById('view-sqft').addEventListener('click',()=>{mainChartView='sqft';document.getElementById('view-sqft').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-year').style.cssText='';document.getElementById('main-chart-title').textContent='Warehouse Fires by Building Size';document.getElementById('main-chart-sub').textContent='Number of fires by warehouse square footage, stacked by county';render()});
 document.getElementById('view-year').addEventListener('click',()=>{mainChartView='year';document.getElementById('view-year').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-sqft').style.cssText='';document.getElementById('main-chart-title').textContent='Warehouse Fires by Year';document.getElementById('main-chart-sub').textContent='Annual building fire count by county (2005-2024)';render()});
 
