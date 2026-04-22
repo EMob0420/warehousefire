@@ -30,10 +30,13 @@ header{padding-bottom:1.1rem;border-bottom:1px solid var(--border);margin-bottom
 .hero-top h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .hero-tagline{font-size:1.125rem;color:var(--text2);font-weight:400;line-height:1.5;margin-bottom:.7rem;text-align:center}
 .hero-tagline strong{color:var(--text)}
-.hero-explainer{max-width:800px;margin:0 auto .9rem;text-align:center}
-.hero-explainer p{font-size:.94rem;color:var(--text3);line-height:1.65;margin:0 0 .55rem}
-.hero-explainer p:last-child{margin-bottom:0}
 .stats-divider{border:none;border-top:1px solid var(--border);margin:.85rem 0}
+.about-btn{background:none;border:1px solid var(--border);border-radius:5px;color:var(--text3);font-size:.75rem;font-family:inherit;padding:.25rem .6rem;cursor:pointer;white-space:nowrap;transition:all .12s;flex-shrink:0}
+.about-btn:hover{border-color:var(--text3);color:var(--text2)}
+.about-panel{display:none;max-width:800px;margin:.6rem auto 0;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:.75rem 1rem;text-align:left}
+.about-panel.open{display:block}
+.about-panel p{font-size:.86rem;color:var(--text3);line-height:1.65;margin:0 0 .5rem}
+.about-panel p:last-child{margin-bottom:0}
 /* stat pills in header */
 .stats{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;justify-content:center}
 .stat{display:flex;flex-direction:column;gap:.05rem}
@@ -154,13 +157,16 @@ footer a{color:var(--accent);text-decoration:none}
     <img src="logo.png" alt="SoCal Earth — Pitzer College Robert Redford Conservancy">
     <h1>SoCal Warehouse <span>Fire Explorer</span></h1>
   </div>
-  <p class="hero-tagline"><strong>654 structure fires including warehouses, commercial buildings, and industrial facilities</strong> across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024.</p>
-  <div class="hero-explainer">
-    <p>This tool maps structure fires reported to FEMA's National Fire Incident Reporting System (NFIRS) across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024. Use the filters to explore fires by county, year, building size, or cause.</p>
+  <p class="hero-tagline"><strong>654 structure fires across SoCal, 2005–2024</strong></p>
+  <hr class="stats-divider">
+  <div style="display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap">
+    <div class="stats" id="stats"></div>
+    <button class="about-btn" id="btn-about">? About this data</button>
+  </div>
+  <div class="about-panel" id="about-panel">
+    <p>This tool maps structure fires reported to FEMA's National Fire Incident Reporting System (NFIRS) across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024. Use the filters to explore fires by county, year, building size, or cause. Marker size reflects property loss; color reflects structure type or cause depending on the selected mode.</p>
     <p>Fires are categorized as <strong style="color:var(--text2)">Warehouse fires</strong> (properties classified as PUC 891 or buildings ≥10,000 sq ft) or <strong style="color:var(--text2)">Building fires</strong> (all other commercial and industrial structures). While FEMA does not separately track warehouse fires, buildings over 10,000 sq ft in these counties are reasonably assumed to include warehouse and distribution center use.</p>
   </div>
-  <hr class="stats-divider">
-  <div class="stats" id="stats"></div>
 </header>
 
 <!-- FILTER BAR -->
@@ -713,6 +719,7 @@ document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year
 document.getElementById('f-sqft').addEventListener('change',e=>{AppState.nf.sqft=e.target.value;render()});
 ['all','warehouse','building'].forEach(v=>{document.getElementById('f-btype-'+v).addEventListener('click',()=>{AppState.nf.btype=v==='all'?'':v;['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k===v));render();});});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
+document.getElementById('btn-about').addEventListener('click',()=>{const p=document.getElementById('about-panel');const open=p.classList.toggle('open');document.getElementById('btn-about').textContent=open?'✕ Close':'? About this data';});
 document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',sqft:'',btype:''};
   document.getElementById('f-county').value='';document.getElementById('f-sqft').value='';
   document.getElementById('f-year').value='';document.getElementById('f-search').value='';
