@@ -242,8 +242,8 @@ footer a{color:var(--accent);text-decoration:none}
       <span class="sb-label">Legend</span>
       <div id="legend" class="legend">
         <div id="legend-type" class="legend-color-group">
-          <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Warehouse</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Building Fire</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff6a00"></div>Warehouse</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffe600"></div>Building Fire</div>
           <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Other Structure</div>
         </div>
         <div id="legend-cause" class="legend-color-group" style="display:none">
@@ -631,7 +631,7 @@ function syncImageryToYear(year){
 
 // ============== COLOR MODE ==============
 let colorMode='type';
-const typeColors={warehouse:'#f97316',building:'#ef4444',other:'#3b82f6'};
+const typeColors={warehouse:'#ff6a00',building:'#ffe600',other:'#3b82f6'};
 const causeColors={arson:'#ef4444',equipment:'#eab308',unintentional:'#22d3ee',investigating:'#94a3b8',undetermined:'#6b7280',other:'#a855f7',unknown:'#3f3f46'};
 function getFireCat(tc,sqft){
   if(sqft>=10000) return 'warehouse';
