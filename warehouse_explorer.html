@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SoCal Warehouse Fire Explorer</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
@@ -20,14 +20,23 @@
   --accent:#f43f5e;--accent2:#fb923c;
 }
 html{font-size:18px}
-body{background:var(--bg);color:var(--text);font-family:'Sora',system-ui,sans-serif;min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans','Sora',system-ui,sans-serif;min-height:100vh}
 .container{max-width:1400px;margin:0 auto;padding:1.25rem 1.5rem}
-/* ── HERO ── */
-header{padding-bottom:1.1rem;border-bottom:1px solid var(--border);margin-bottom:.75rem}
-.hero-top{display:flex;align-items:center;gap:1rem;margin-bottom:.65rem;width:fit-content;margin-left:auto;margin-right:auto}
-.hero-top img{height:80px;border-radius:6px;flex-shrink:0}
-.hero-top h1{font-size:1.5rem;font-weight:800;line-height:1.15}
-.hero-top h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+/* ── Site header ── */
+header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
+.header-brand{display:flex;align-items:center;gap:1rem;padding:1.5rem 0 1.25rem}
+.header-brand img{height:50px;width:50px;border-radius:8px;flex-shrink:0;object-fit:cover}
+.header-text{display:flex;flex-direction:column;gap:.2rem}
+.header-text h1{font-size:1.5rem;font-weight:800;line-height:1.1;color:#fafafa;letter-spacing:-.025em;margin:0;font-family:'DM Sans',sans-serif}
+.header-text h1 .fire{color:#E8441A}
+.header-subtitle{font-size:.73rem;color:var(--text3);font-weight:400;letter-spacing:.02em;margin:0}
+.header-divider{border:none;border-top:1px solid #1c1c1f;margin:0}
+/* ── Tab nav ── */
+.tab-nav{display:flex;gap:0;border-bottom:1px solid #1c1c1f;margin-bottom:1.5rem;overflow-x:auto;background:var(--bg)}
+.tab-btn{padding:.75rem 1.2rem;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;color:var(--text3);font-size:.83rem;font-weight:600;cursor:pointer;font-family:'DM Sans',inherit;letter-spacing:.01em;transition:color .18s;white-space:nowrap;flex-shrink:0}
+.tab-btn:hover{color:#E8441A}
+.tab-btn.active{color:#E8441A;border-bottom-color:#E8441A}
+/* legacy */
 .hero-tagline{font-size:1.125rem;color:var(--text2);font-weight:400;line-height:1.5;margin-bottom:.7rem;text-align:center}
 .hero-tagline strong{color:var(--text)}
 .stats-divider{border:none;border-top:1px solid var(--border);margin:.85rem 0}
@@ -89,10 +98,6 @@ header{padding-bottom:1.1rem;border-bottom:1px solid var(--border);margin-bottom
 .market-accordion[open] summary::after{transform:rotate(90deg)}
 .market-accordion-body{padding:1rem;display:grid;gap:.75rem}
 /* ── TABS ── */
-.tab-nav{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.5rem;overflow-x:auto}
-.tab-btn{padding:.65rem 1.3rem;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:none;color:var(--text3);font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;flex-shrink:0}
-.tab-btn:hover{color:var(--text2)}
-.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
 .tab-panel{display:none}.tab-panel.active{display:block}
 /* ── MISC ── */
 select,input[type=search]{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:.5rem .6rem;font-family:inherit;font-size:.9rem;outline:none;transition:border-color .15s}
@@ -153,10 +158,11 @@ td{padding:.45rem .6rem;color:var(--text2)}
 footer{text-align:center;padding:1.5rem 0 1rem;color:var(--text3);font-size:.8rem;border-top:1px solid var(--border);margin-top:2rem}
 footer a{color:var(--accent);text-decoration:none}
 /* ── ABOUT TAB ── */
-.about-tab-section{max-width:800px;margin:0 auto 2rem}
-.about-tab-section h2{font-size:1.1rem;font-weight:700;margin-bottom:.75rem;padding-bottom:.4rem;border-bottom:1px solid var(--border)}
-.about-tab-section p{font-size:.92rem;color:var(--text2);line-height:1.75;margin-bottom:.85rem}
+.about-tab-section{max-width:750px;margin:0 auto 2rem}
+.about-tab-section h2{font-size:1.375rem;font-weight:700;text-align:center;margin-bottom:1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.about-tab-section p{font-size:.92rem;color:var(--text2);line-height:1.75;margin-bottom:1.875rem}
 .about-tab-section p:last-child{margin-bottom:0}
+#tab-about{padding-top:2.5rem}
 .tab-intro{font-size:.92rem;color:var(--text2);line-height:1.75;margin:0 auto 1.5rem;max-width:800px}
 .explore-btn{display:block;width:fit-content;margin:1rem auto 0;padding:.65rem 1.5rem;background:var(--accent);color:white;border:none;border-radius:7px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
 .explore-btn:hover{opacity:.85}
@@ -169,13 +175,16 @@ footer a{color:var(--accent);text-decoration:none}
 <body>
 <div class="container">
 
-<!-- HERO -->
+<!-- HEADER -->
 <header>
-  <div class="hero-top">
+  <div class="header-brand">
     <img src="logo.png" alt="SoCal Earth — Pitzer College Robert Redford Conservancy">
-    <h1>SoCal Warehouse <span>Fire Explorer</span></h1>
+    <div class="header-text">
+      <h1>SoCal Warehouse <span class="fire">Fire Explorer</span></h1>
+      <p class="header-subtitle">Structure fire data across SoCal, 2005–2024</p>
+    </div>
   </div>
-  <p class="hero-tagline"><strong>654 structure fires across SoCal, 2005–2024</strong></p>
+  <hr class="header-divider">
 </header>
 
 <!-- TAB NAV -->
@@ -183,7 +192,7 @@ footer a{color:var(--accent);text-decoration:none}
   <button class="tab-btn active" data-tab="about">About</button>
   <button class="tab-btn" data-tab="fires">Fire Explorer</button>
   <button class="tab-btn" data-tab="vacancy">Warehouse Vacancy</button>
-  <button class="tab-btn" data-tab="warehouses">About Warehouses</button>
+  <button class="tab-btn" data-tab="warehouses">WarehouseCITY</button>
 </nav>
 
 <!-- TAB 1: ABOUT -->
@@ -195,6 +204,8 @@ footer a{color:var(--accent);text-decoration:none}
     <p>Structure fires in large commercial and industrial buildings pose heightened risks when those buildings are packed with stored goods and located near homes and schools. Warehouse fires can burn hotter and longer than typical structure fires, produce toxic smoke, and overwhelm local fire departments with their scale and intensity.</p>
     <p>This tool is designed for researchers, journalists, community advocates, and policymakers who want to understand the geography, frequency, and severity of warehouse and industrial structure fires across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005 to 2024.</p>
   </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);max-width:750px;margin:0 auto 2rem">
 
   <div class="about-tab-section">
     <h2>Methods</h2>
@@ -215,6 +226,7 @@ footer a{color:var(--accent);text-decoration:none}
 <!-- TAB 2: FIRE EXPLORER -->
 <div class="tab-panel" id="tab-fires">
 
+<p class="hero-tagline"><strong>654 structure fires across SoCal, 2005–2024</strong></p>
 <div class="stats" id="stats" style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;margin-bottom:1rem"></div>
 
 <!-- MAP ROW -->
@@ -389,28 +401,51 @@ footer a{color:var(--accent);text-decoration:none}
   </div><!-- end charts -->
 </div><!-- end tab-vacancy -->
 
-<!-- TAB 4: ABOUT WAREHOUSES -->
+<!-- TAB 4: WAREHOUSE CITY -->
 <div class="tab-panel" id="tab-warehouses">
 
-  <div class="wh-section">
-    <h2>What Counts as a Warehouse</h2>
-    <p>Under FEMA's National Fire Incident Reporting System, warehouses are identified by Property Use Code (PUC) 891 — defined as buildings primarily used for storage of goods, merchandise, or materials. This tool also uses building square footage (≥10,000 sq ft) as a supplementary proxy where PUC data is unavailable.</p>
-    <div class="placeholder-box">[CONTENT TO BE ADDED]</div>
+  <div style="margin-bottom:.75rem">
+    <p style="font-size:.88rem;color:var(--text3);line-height:1.6">
+      <strong style="color:var(--text2)">WarehouseCITY</strong> — built by the Redford Conservancy at Pitzer College and Radical Research LLC — maps the warehouse footprint and environmental impact across Southern California. Filter by jurisdiction, legislative district, year built, and calculate diesel PM, NOx, CO2, and truck trip emissions.
+      <a href="https://radicalresearch.shinyapps.io/WarehouseCITY/" target="_blank" style="color:var(--accent);text-decoration:none;margin-left:.35rem">Open in new tab ↗</a>
+    </p>
   </div>
 
-  <div class="wh-section">
-    <h2>Why Southern California Has So Many Warehouses</h2>
-    <p>Southern California is the logistics backbone of the United States. The Ports of Los Angeles and Long Beach together handle roughly 40% of all U.S. containerized imports, and the Inland Empire has become one of the largest warehouse markets in the world — driven by e-commerce growth, Amazon's regional expansion, and proximity to the nation's largest consumer market.</p>
-    <div class="placeholder-box">[CONTENT TO BE ADDED]</div>
-  </div>
-
-  <div class="wh-section">
-    <h2>Warehouse Density, Worker Conditions, and Fire Risk</h2>
-    <p>The rapid expansion of warehouse infrastructure in SoCal has concentrated fire risk, traffic, and environmental burden in communities that were already overburdened. Research connects high warehouse density to elevated rates of asthma, diesel emissions, and industrial incidents in adjacent neighborhoods.</p>
-    <div class="placeholder-box">[CONTENT TO BE ADDED]</div>
+  <div id="warehousecity-wrap" style="position:relative;width:100%;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)">
+    <iframe
+      id="warehousecity-frame"
+      src="https://radicalresearch.shinyapps.io/WarehouseCITY/"
+      style="width:100%;height:780px;border:none;display:block"
+      loading="lazy"
+      title="WarehouseCITY — Redford Conservancy / Radical Research"
+    ></iframe>
+    <div id="warehousecity-blocked" style="display:none;padding:3rem 2rem;text-align:center">
+      <p style="color:var(--text2);font-size:.95rem;margin-bottom:1rem">This tool cannot be embedded directly — the WarehouseCITY server does not allow iframes.</p>
+      <a href="https://radicalresearch.shinyapps.io/WarehouseCITY/" target="_blank"
+         style="display:inline-block;padding:.65rem 1.5rem;background:var(--accent);color:white;border-radius:7px;font-weight:700;font-size:.95rem;text-decoration:none">
+        Open WarehouseCITY →
+      </a>
+    </div>
   </div>
 
 </div><!-- end tab-warehouses -->
+
+<script>
+(function(){
+  var frame = document.getElementById('warehousecity-frame');
+  var blocked = document.getElementById('warehousecity-blocked');
+  frame.addEventListener('error', function(){ frame.style.display='none'; blocked.style.display='block'; });
+  // Detect blank/blocked iframe after load
+  frame.addEventListener('load', function(){
+    try {
+      var doc = frame.contentDocument || frame.contentWindow.document;
+      if (!doc || doc.body.innerHTML === '') { frame.style.display='none'; blocked.style.display='block'; }
+    } catch(e) {
+      // Cross-origin — can't inspect; assume it loaded
+    }
+  });
+})();
+</script>
 
 <footer style="padding:1.5rem 0 1rem;color:var(--text3);font-size:.75rem;border-top:1px solid var(--border);margin-top:1rem;line-height:1.7;max-width:860px">
   <strong style="color:var(--text2)">Data source:</strong> <a href="https://www.fema.gov/about/openfema/data-sets/fema-usfa-nfirs-annual-data" target="_blank" style="color:var(--accent);text-decoration:none">FEMA NFIRS Public Data</a> (USFA/FEMA) · Property Use Code 891 (Warehouse) + Incident Type 111 (Building Fire) · Storage yard and outside fires (INC 150–162) excluded · 2005–2024<br>
