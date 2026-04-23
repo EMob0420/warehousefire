@@ -354,10 +354,10 @@ footer a{color:var(--accent);text-decoration:none}
 <div class="charts">
   <div class="card full">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
-      <div><h2 id="main-chart-title">Fires by Year</h2><div class="sub" id="main-chart-sub">Annual warehouse building fire count by county (2005–2024)</div></div>
+      <div><h2 id="main-chart-title">Warehouse Fires by Building Size</h2><div class="sub" id="main-chart-sub">Number of fires by warehouse square footage, stacked by county</div></div>
       <div style="display:flex;gap:.4rem">
-        <button class="action-btn" id="view-year" style="background:var(--accent);color:white;border-color:var(--accent)">By Year</button>
-        <button class="action-btn" id="view-sqft">By Size</button>
+        <button class="action-btn" id="view-year">By Year</button>
+        <button class="action-btn" id="view-sqft" style="background:var(--accent);color:white;border-color:var(--accent)">By Size</button>
       </div>
     </div>
     <div class="chart-wrap"><canvas id="ch-year"></canvas></div>
@@ -781,18 +781,24 @@ function renderStats(data){
 // ============== CHARTS ==============
 Chart.defaults.color='#a1a1aa';Chart.defaults.borderColor='rgba(63,63,70,.4)';Chart.defaults.font.family="'Sora',system-ui";
 const charts={};
+function makeYearChart(mode){
+  if(charts.year) charts.year.destroy();
+  const isH=mode==='sqft';
+  charts.year=new Chart(document.getElementById('ch-year'),{type:'bar',data:{labels:[],datasets:counties.map(c=>({label:c+' County',data:[],backgroundColor:cColors[c],borderRadius:2}))},options:{responsive:true,maintainAspectRatio:false,indexAxis:isH?'y':'x',plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},scales:{x:{stacked:true,beginAtZero:isH,grid:{display:false}},y:{stacked:true,beginAtZero:!isH}}}});
+}
 function initCharts(){
-  charts.year=new Chart(document.getElementById('ch-year'),{type:'bar',data:{labels:[],datasets:counties.map(c=>({label:c+' County',data:[],backgroundColor:cColors[c],borderRadius:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true}}}});
+  makeYearChart('sqft');
   charts.county=new Chart(document.getElementById('ch-county'),{type:'bar',data:{labels:counties.map(c=>c+' County'),datasets:[{data:[0,0,0,0],backgroundColor:counties.map(c=>cColors[c]),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{display:false}},y:{grid:{display:false}}}}});
   charts.city=new Chart(document.getElementById('ch-city'),{type:'bar',data:{labels:[],datasets:[{data:[],backgroundColor:'rgba(244,63,94,.6)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{display:false}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
   charts.cause=new Chart(document.getElementById('ch-cause'),{type:'doughnut',data:{labels:[],datasets:[{data:[],backgroundColor:['#ef4444','#fb923c','#facc15','#22d3ee','#a78bfa','#34d399','#f472b6'],borderColor:'#18181b',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'45%',plugins:{legend:{position:'right',labels:{padding:8,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',boxWidth:8}}}}});
   charts.heat=new Chart(document.getElementById('ch-heat'),{type:'bar',data:{labels:[],datasets:[{data:[],backgroundColor:'rgba(251,146,60,.6)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{display:false}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
 }
-let mainChartView='year';
+let mainChartView='sqft';
 document.getElementById('view-sqft').addEventListener('click',()=>{mainChartView='sqft';document.getElementById('view-sqft').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-year').style.cssText='';document.getElementById('main-chart-title').textContent='Warehouse Fires by Building Size';document.getElementById('main-chart-sub').textContent='Number of fires by warehouse square footage, stacked by county';render()});
 document.getElementById('view-year').addEventListener('click',()=>{mainChartView='year';document.getElementById('view-year').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-sqft').style.cssText='';document.getElementById('main-chart-title').textContent='Warehouse Fires by Year';document.getElementById('main-chart-sub').textContent='Annual building fire count by county (2005-2024)';render()});
 
 function updateCharts(data){
+  makeYearChart(mainChartView);
   if(mainChartView==='sqft'){
     const bins=['Under 5K','5K-10K','10K-25K','25K-50K','50K-100K','100K-250K','250K-500K','500K+','Unknown'];
     function getBin(sqft){
@@ -803,15 +809,10 @@ function updateCharts(data){
     }
     charts.year.data.labels=bins;
     counties.forEach((c,ci)=>{charts.year.data.datasets[ci].data=bins.map(b=>data.filter(d=>d.co===c&&getBin(d.sqft)===b).length)});
-    charts.year.options.indexAxis='y';
-    charts.year.options.scales.x.title={display:true,text:'Number of fires'};
-    charts.year.options.scales.y.title={display:false};
   }else{
     const yrs={};data.forEach(d=>{yrs[d.yr]=true});const yrList=Object.keys(yrs).map(Number).sort();
     charts.year.data.labels=yrList;
     counties.forEach((c,ci)=>{charts.year.data.datasets[ci].data=yrList.map(y=>data.filter(d=>d.yr===y&&d.co===c).length)});
-    charts.year.options.indexAxis='x';
-    charts.year.options.scales.x.title={display:false};
   }
   charts.year.update();
   charts.county.data.datasets[0].data=counties.map(c=>data.filter(d=>d.co===c).length);charts.county.update();
