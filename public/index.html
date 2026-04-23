@@ -1007,10 +1007,10 @@ render();setTimeout(()=>map.invalidateSize(),100);
 
 // ============== IE CONTEXT MAP ==============
 let ieMap;
-(function(){
+window.addEventListener('load',function(){
   ieMap=L.map('ie-context-map',{center:[33.88,-117.85],zoom:9,zoomControl:true,scrollWheelZoom:false,attributionControl:false});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:18,subdomains:'abcd'}).addTo(ieMap);
-  setTimeout(()=>ieMap.invalidateSize(),200);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{maxZoom:18,subdomains:'abcd'}).addTo(ieMap);
+  setTimeout(()=>ieMap.invalidateSize(),300);
 
   function mkIcon(emoji,color){
     return L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],
@@ -1037,7 +1037,7 @@ let ieMap;
     ['UP West Colton Yard',34.0385,-117.3337],
     ['BNSF Hobart Yard (Commerce)',34.0075,-118.1436],
   ].forEach(([name,lat,lng])=>L.marker([lat,lng],{icon:mkIcon('🚂','#ea580c')}).bindTooltip(name,{direction:'top',className:'ie-tip'}).addTo(ieMap));
-})();
+});
 </script>
 </body>
 </html>
