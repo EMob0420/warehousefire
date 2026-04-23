@@ -354,14 +354,13 @@ footer a{color:var(--accent);text-decoration:none}
 <div class="charts">
   <div class="card full">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
-      <div><h2 id="main-chart-title">Warehouse Fires by Building Size</h2><div class="sub" id="main-chart-sub">Estimated total sq ft affected, based on fire count × median building size per category</div></div>
+      <div><h2 id="main-chart-title">Warehouse Fires by Building Size</h2><div class="sub" id="main-chart-sub">Number of fires by building size category, stacked by county</div></div>
       <div style="display:flex;gap:.4rem">
         <button class="action-btn" id="view-year">By Year</button>
         <button class="action-btn" id="view-sqft" style="background:var(--accent);color:white;border-color:var(--accent)">By Size</button>
       </div>
     </div>
     <div class="chart-wrap"><canvas id="ch-year"></canvas></div>
-    <p id="main-chart-footnote" style="font-size:.7rem;color:var(--text3);margin:.5rem 0 0;text-align:right">Square footage estimated using category midpoints</p>
   </div>
   <div class="card"><h2>How Fires Started</h2><div class="sub">Cause of ignition — why it happened</div><div class="chart-wrap"><canvas id="ch-cause"></canvas></div></div>
   <div class="card"><h2>Heat Source</h2><div class="sub">What physically ignited the fire</div><div class="chart-wrap"><canvas id="ch-heat"></canvas></div></div>
@@ -785,8 +784,7 @@ const charts={};
 function makeYearChart(mode){
   if(charts.year) charts.year.destroy();
   const isH=mode==='sqft';
-  const fmtSqft=v=>v>=1e6?(v/1e6).toFixed(1).replace(/\.0$/,'')+'M sq ft':v>=1e3?Math.round(v/1e3)+'K sq ft':v+' sq ft';
-  charts.year=new Chart(document.getElementById('ch-year'),{type:'bar',data:{labels:[],datasets:counties.map(c=>({label:c+' County',data:[],backgroundColor:cColors[c],borderRadius:2}))},options:{responsive:true,maintainAspectRatio:false,indexAxis:isH?'y':'x',plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:isH?{label:ctx=>ctx.dataset.label+': '+(ctx.parsed.x>=1e6?((ctx.parsed.x/1e6).toFixed(1).replace(/\.0$/,''))+'M sq ft':Math.round(ctx.parsed.x/1e3)+'K sq ft')}:{}}},scales:{x:{stacked:true,beginAtZero:isH,grid:{display:false},title:{display:isH,text:'Total Square Footage at Risk (estimated)',color:'#a1a1aa',font:{size:11}},ticks:isH?{callback:v=>v>=1e6?(v/1e6).toFixed(1).replace(/\.0$/,'')+'M':v>=1e3?Math.round(v/1e3)+'K':v}:{}},y:{stacked:true,beginAtZero:!isH}}}});
+  charts.year=new Chart(document.getElementById('ch-year'),{type:'bar',data:{labels:[],datasets:counties.map(c=>({label:c+' County',data:[],backgroundColor:cColors[c],borderRadius:2}))},options:{responsive:true,maintainAspectRatio:false,indexAxis:isH?'y':'x',plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},scales:{x:{stacked:true,beginAtZero:isH,grid:{display:false},title:{display:isH,text:'Number of Fires',color:'#a1a1aa',font:{size:11}}},y:{stacked:true,beginAtZero:!isH,title:{display:isH,text:'Building Size (sq ft)',color:'#a1a1aa',font:{size:11}}}}}});
 }
 function initCharts(){
   makeYearChart('sqft');
@@ -796,22 +794,21 @@ function initCharts(){
   charts.heat=new Chart(document.getElementById('ch-heat'),{type:'bar',data:{labels:[],datasets:[{data:[],backgroundColor:'rgba(251,146,60,.6)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{display:false}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
 }
 let mainChartView='sqft';
-document.getElementById('view-sqft').addEventListener('click',()=>{mainChartView='sqft';document.getElementById('view-sqft').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-year').style.cssText='';document.getElementById('main-chart-title').textContent='Warehouse Fires by Building Size';document.getElementById('main-chart-sub').textContent='Estimated total sq ft affected, based on fire count × median building size per category';document.getElementById('main-chart-footnote').style.display='';render()});
-document.getElementById('view-year').addEventListener('click',()=>{mainChartView='year';document.getElementById('view-year').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-sqft').style.cssText='';document.getElementById('main-chart-title').textContent='Warehouse Fires by Year';document.getElementById('main-chart-sub').textContent='Annual building fire count by county (2005-2024)';document.getElementById('main-chart-footnote').style.display='none';render()});
+document.getElementById('view-sqft').addEventListener('click',()=>{mainChartView='sqft';document.getElementById('view-sqft').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-year').style.cssText='';document.getElementById('main-chart-title').textContent='Warehouse Fires by Building Size';document.getElementById('main-chart-sub').textContent='Number of fires by building size category, stacked by county';render()});
+document.getElementById('view-year').addEventListener('click',()=>{mainChartView='year';document.getElementById('view-year').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-sqft').style.cssText='';document.getElementById('main-chart-title').textContent='Warehouse Fires by Year';document.getElementById('main-chart-sub').textContent='Annual building fire count by county (2005-2024)';render()});
 
 function updateCharts(data){
   makeYearChart(mainChartView);
   if(mainChartView==='sqft'){
-    const MIDPT={'Under 5K':2500,'5K-10K':7500,'10K-25K':17500,'25K-50K':37500,'50K-100K':75000,'100K-250K':175000,'250K-500K':375000,'500K+':600000};
-    const bins=Object.keys(MIDPT);
+    const bins=['Under 5K','5K-10K','10K-25K','25K-50K','50K-100K','100K-250K','250K-500K','500K+','Unknown'];
     function getBin(sqft){
-      if(!sqft||sqft<=0)return null;
+      if(!sqft||sqft<=0)return'Unknown';
       if(sqft<5000)return'Under 5K';if(sqft<10000)return'5K-10K';if(sqft<25000)return'10K-25K';
       if(sqft<50000)return'25K-50K';if(sqft<100000)return'50K-100K';if(sqft<250000)return'100K-250K';
       if(sqft<500000)return'250K-500K';return'500K+';
     }
     charts.year.data.labels=bins;
-    counties.forEach((c,ci)=>{charts.year.data.datasets[ci].data=bins.map(b=>{const cnt=data.filter(d=>d.co===c&&getBin(d.sqft)===b).length;return cnt*MIDPT[b];});});
+    counties.forEach((c,ci)=>{charts.year.data.datasets[ci].data=bins.map(b=>data.filter(d=>d.co===c&&getBin(d.sqft)===b).length)});
   }else{
     const yrs={};data.forEach(d=>{yrs[d.yr]=true});const yrList=Object.keys(yrs).map(Number).sort();
     charts.year.data.labels=yrList;
