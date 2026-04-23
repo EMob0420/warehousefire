@@ -803,10 +803,15 @@ function updateCharts(data){
     }
     charts.year.data.labels=bins;
     counties.forEach((c,ci)=>{charts.year.data.datasets[ci].data=bins.map(b=>data.filter(d=>d.co===c&&getBin(d.sqft)===b).length)});
+    charts.year.options.indexAxis='y';
+    charts.year.options.scales.x.title={display:true,text:'Number of fires'};
+    charts.year.options.scales.y.title={display:false};
   }else{
     const yrs={};data.forEach(d=>{yrs[d.yr]=true});const yrList=Object.keys(yrs).map(Number).sort();
     charts.year.data.labels=yrList;
     counties.forEach((c,ci)=>{charts.year.data.datasets[ci].data=yrList.map(y=>data.filter(d=>d.yr===y&&d.co===c).length)});
+    charts.year.options.indexAxis='x';
+    charts.year.options.scales.x.title={display:false};
   }
   charts.year.update();
   charts.county.data.datasets[0].data=counties.map(c=>data.filter(d=>d.co===c).length);charts.county.update();
