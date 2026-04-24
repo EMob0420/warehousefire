@@ -332,33 +332,10 @@ footer a{color:#ebe599;text-decoration:none}
     <!-- Legend -->
     <div class="sb-section">
       <span class="sb-label">Legend</span>
-      <div id="legend" class="legend">
-        <div id="legend-type" class="legend-color-group">
-          <div class="legend-item"><div class="legend-dot" style="background:#ff6a00"></div>Warehouse</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#ffe600"></div>Building Fire</div>
-        </div>
-        <div id="legend-cause" class="legend-color-group" style="display:none">
-          <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Arson</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>Equip. Failure</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Unintentional</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Investigating</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div>Undetermined</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Other</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#3f3f46"></div>Unknown</div>
-        </div>
-        <div id="legend-county" class="legend-color-group" style="display:none">
-          <div class="legend-item"><div class="legend-dot" style="background:var(--la)"></div>Los Angeles</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--sb)"></div>San Bernardino</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--rv)"></div>Riverside</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--oc)"></div>Orange</div>
-        </div>
-
-        <div class="legend-toggle">
-          <span class="sb-label" style="margin-bottom:0">Color by</span>
-          <button class="legend-toggle-btn" id="color-cause">Cause</button>
-          <button class="legend-toggle-btn" id="color-county">County</button>
-          <button class="legend-toggle-btn active" id="color-type">Type</button>
-        </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ff6a00"></div>Warehouse</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffe600"></div>Building Fire</div>
+        <div class="legend-item" id="legend-small-item" style="display:none"><div class="legend-dot" style="background:#4ade80"></div>Small building (&lt;10K sq ft)</div>
       </div>
     </div>
 
@@ -758,74 +735,6 @@ function syncImageryToYear(year){
   }
 }
 
-// ============== COLOR MODE ==============
-let colorMode='type';
-const typeColors={warehouse:'#ff6a00',building:'#ffe600',other:'#3b82f6'};
-const causeColors={arson:'#ef4444',equipment:'#eab308',unintentional:'#22d3ee',investigating:'#94a3b8',undetermined:'#6b7280',other:'#a855f7',unknown:'#3f3f46'};
-function getFireCat(tc,puc){
-  if(puc==='891') return 'warehouse';
-  if(['111','112','115'].includes(tc)) return 'building';
-  return 'other';
-}
-function normCause(cause){
-  if(!cause||cause==='') return 'unknown';
-  if(cause==='Intentional (Arson)') return 'arson';
-  if(cause==='Equipment Failure') return 'equipment';
-  if(cause==='Unintentional') return 'unintentional';
-  if(cause==='Under Investigation') return 'investigating';
-  if(cause==='Undetermined') return 'undetermined';
-  return 'other';
-}
-const causeLabelMap={arson:'Arson',equipment:'Equipment Failure',unintentional:'Unintentional',investigating:'Under Investigation',undetermined:'Undetermined',other:'Other / Nature',unknown:'Unknown'};
-
-function makeSimpleDot(count,counts){
-  const dominant=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
-  const color=causeColors[dominant?dominant[0]:'unknown']||'#888';
-  const size=Math.round(Math.min(58,Math.max(20,12+Math.log10(count)*15)));
-  const cx=size/2,cy=size/2,r=size/2-1.5;
-  const svg=`<svg width="${size}" height="${size}" style="filter:drop-shadow(0 1px 4px rgba(0,0,0,.6))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" fill-opacity=".88" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${count>99?9:10}" font-weight="700" font-family="Space Mono,monospace">${count}</text></svg>`;
-  return L.divIcon({html:svg,className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]});
-}
-
-function buildClusterTip(cl){
-  const total=cl.getChildCount();
-  const markers=cl.getAllChildMarkers();
-  const counts={};
-  markers.forEach(m=>{const ck=m.options.causeKey||'unknown';counts[ck]=(counts[ck]||0)+1;});
-  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  let html=`<div class="ctip"><div class="ctip-total">${total} fires</div>`;
-  sorted.forEach(([cat,cnt])=>{
-    const pct=Math.round(cnt/total*100);
-    html+=`<div class="ctip-row"><span class="ctip-dot" style="background:${causeColors[cat]||'#888'}"></span><span class="ctip-lbl">${causeLabelMap[cat]||cat}</span><span class="ctip-bar-wrap"><span class="ctip-bar-fill" style="width:${pct}%;background:${causeColors[cat]||'#888'}"></span></span><span class="ctip-n">${cnt}</span></div>`;
-  });
-  html+='</div>';
-  return html;
-}
-
-function makePieCluster(count,counts){
-  const size=count>99?54:count>9?46:38;
-  const r=size/2-3;const cx=size/2,cy=size/2;
-  const entries=Object.entries(counts).filter(([,v])=>v>0);
-  let svg=`<svg width="${size}" height="${size}" style="filter:drop-shadow(0 1px 4px rgba(0,0,0,.7))">`;
-  if(entries.length===1){
-    svg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${causeColors[entries[0][0]]||'#888'}"/>`;
-  } else {
-    let a=-Math.PI/2;
-    entries.forEach(([cat,cnt])=>{
-      const sweep=(cnt/count)*2*Math.PI;
-      const ea=a+sweep;
-      const x1=(cx+r*Math.cos(a)).toFixed(2),y1=(cy+r*Math.sin(a)).toFixed(2);
-      const x2=(cx+r*Math.cos(ea)).toFixed(2),y2=(cy+r*Math.sin(ea)).toFixed(2);
-      svg+=`<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${sweep>Math.PI?1:0},1 ${x2},${y2} Z" fill="${causeColors[cat]||'#888'}"/>`;
-      a=ea;
-    });
-  }
-  const ir=r*0.42;
-  svg+=`<circle cx="${cx}" cy="${cy}" r="${ir}" fill="rgba(9,9,11,.88)"/>`;
-  svg+=`<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${count>99?9:10}" font-weight="700" font-family="Space Mono,monospace">${count}</text>`;
-  svg+='</svg>';
-  return L.divIcon({html:svg,className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]});
-}
 
 // ============== NEWS DB ==============
 // Keyed by "YYYY-MM-DD|CITY" matching NFIRS dt + ci fields
@@ -839,14 +748,11 @@ const NEWS_DB={
 };
 
 function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(20,Math.max(6,4+Math.log10(pl)*4)))}
-function makeIcon(county,size,loss,tc,cause,sqft,puc){
-  const cat=normCause(cause);
-  const isUnknown=colorMode==='cause'&&cat==='unknown';
-  const c=colorMode==='cause'?(causeColors[cat]||'#888'):colorMode==='type'?(typeColors[getFireCat(tc,puc)]||'#888'):(cColors[county]||'#888');
-  if(isUnknown){size=Math.max(4,Math.round(size*.65));}
+function makeIcon(size,loss,sqft,puc){
   const isWarehouse=puc==='891';
-  // Warehouse: solid fill. Building: semi-transparent fill with heavier white stroke.
-  const op=isUnknown?'.3':isWarehouse?(loss>100000?'.92':loss>10000?'.82':'.68'):(loss>100000?'.55':loss>10000?'.45':'.35');
+  const isSmall=sqft>0&&sqft<10000;
+  const c=isWarehouse?'#ff6a00':isSmall?'#4ade80':'#ffe600';
+  const op=isWarehouse?(loss>100000?'.92':loss>10000?'.82':'.68'):(loss>100000?'.55':loss>10000?'.45':'.35');
   const sw=isWarehouse?'0.8':'2';
   const pad=3;const W=size+pad*2;const cx=W/2,cy=W/2;const r=size/2;
   const glow=loss>500000?`<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="${c}" fill-opacity=".15"/>`:'';
@@ -861,7 +767,7 @@ function buildMarkers(data){
   cluster.clearLayers();
   data.forEach(d=>{
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
-    const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc,d.cause,d.sqft,d.puc),causeKey:normCause(d.cause),cityKey:d.ci,nfirsData:d});
+    const m=L.marker(ll,{icon:makeIcon(sz,d.pl,d.sqft,d.puc),cityKey:d.ci,nfirsData:d});
     const pop=document.createElement('div');
     const pt=document.createElement('div');pt.className='popup-type';pt.textContent=d.puc==='891'?'Warehouse (PUC 891)':normType(d.tc);pop.appendChild(pt);
     const ptl=document.createElement('div');ptl.className='popup-title';ptl.textContent=d.addr||'(no address)';pop.appendChild(ptl);
@@ -1001,31 +907,18 @@ document.querySelectorAll('.tab-nav .tab-btn').forEach(btn=>{
 document.getElementById('btn-explore').addEventListener('click',()=>switchTab('fires'));
 
 // ============== FILTERS ==============
-// ============== COLOR BY TOGGLE ==============
-function setColorMode(mode){
-  colorMode=mode;
-  ['cause','county','type'].forEach(m=>{
-    const btn=document.getElementById('color-'+m);
-    const leg=document.getElementById('legend-'+m);
-    if(btn) btn.classList.toggle('active',m===mode);
-    if(leg) leg.style.display=m===mode?'flex':'none';
-  });
-  render();
-}
-document.getElementById('color-cause').addEventListener('click',()=>setColorMode('cause'));
-document.getElementById('color-county').addEventListener('click',()=>setColorMode('county'));
-document.getElementById('color-type').addEventListener('click',()=>setColorMode('type'));
-
 document.getElementById('f-county').addEventListener('change',e=>{AppState.nf.county=e.target.value;render()});
 document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year=e.target.value;syncImageryToYear(e.target.value);render()});
 ['all','warehouse','building'].forEach(v=>{document.getElementById('f-btype-'+v).addEventListener('click',()=>{AppState.nf.btype=v==='all'?'':v;['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k===v));render();});});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
-Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).addEventListener('change',e=>{AppState.sizeTiers[k]=e.target.checked;render();});});
+function updateLegend(){const show=AppState.sizeTiers['5k']||AppState.sizeTiers['sub5k'];document.getElementById('legend-small-item').style.display=show?'flex':'none';}
+Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).addEventListener('change',e=>{AppState.sizeTiers[k]=e.target.checked;updateLegend();render();});});
 document.getElementById('btn-about').addEventListener('click',()=>{const p=document.getElementById('about-panel');const open=p.classList.toggle('open');document.getElementById('btn-about').textContent=open?'✕ Close':'? About this data';});
 document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',btype:''};Object.assign(AppState.sizeTiers,SZ_DEFAULTS);
   document.getElementById('f-county').value='';
   document.getElementById('f-year').value='';document.getElementById('f-search').value='';
   Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).checked=SZ_DEFAULTS[k];});
+  updateLegend();
   ['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k==='all'));
   syncImageryToYear('');render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
