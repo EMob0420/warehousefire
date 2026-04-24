@@ -96,10 +96,9 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .legend-toggle{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.35rem}
 .legend-toggle-btn{padding:.2rem .5rem;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:.68rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
 .legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
-.legend-small-filter{display:flex;flex-direction:column;gap:.3rem;margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)}
-.legend-small-filter label{display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--text2);cursor:pointer;user-select:none}
-.legend-small-filter input[type=checkbox]{accent-color:#ebe599;width:12px;height:12px;flex-shrink:0;cursor:pointer}
-.legend-small-note{font-size:.68rem;color:var(--text3);padding-left:1rem}
+.size-filter{display:flex;flex-direction:column;gap:.28rem}
+.size-filter label{display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--text2);cursor:pointer;user-select:none}
+.size-filter input[type=checkbox]{accent-color:#ebe599;width:12px;height:12px;flex-shrink:0;cursor:pointer}
 #map{width:100%;height:100%;z-index:1}
 /* ── CHARTS ── */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
@@ -360,18 +359,24 @@ footer a{color:#ebe599;text-decoration:none}
           <button class="legend-toggle-btn" id="color-county">County</button>
           <button class="legend-toggle-btn active" id="color-type">Type</button>
         </div>
+      </div>
+    </div>
 
-        <div class="legend-small-filter">
-          <label>
-            <input type="checkbox" id="f-include-small">
-            Include small buildings (&lt;10K sq ft)
-          </label>
-          <label>
-            <input type="checkbox" id="f-include-unknown">
-            Include fires with no reported size
-          </label>
-          <span class="legend-small-note" id="legend-small-note">Showing fires at 10,000+ sq ft buildings</span>
-        </div>
+    <hr class="sb-divider">
+
+    <!-- Building Size -->
+    <div class="sb-section">
+      <span class="sb-label">Building Size</span>
+      <div class="size-filter">
+        <label><input type="checkbox" id="f-sz-500k" checked> 500K+ sq ft</label>
+        <label><input type="checkbox" id="f-sz-250k" checked> 250K–500K</label>
+        <label><input type="checkbox" id="f-sz-100k" checked> 100K–250K</label>
+        <label><input type="checkbox" id="f-sz-50k" checked> 50K–100K</label>
+        <label><input type="checkbox" id="f-sz-25k" checked> 25K–50K</label>
+        <label><input type="checkbox" id="f-sz-10k" checked> 10K–25K</label>
+        <label><input type="checkbox" id="f-sz-none" checked> No reported size</label>
+        <label><input type="checkbox" id="f-sz-5k"> 5K–10K</label>
+        <label><input type="checkbox" id="f-sz-sub5k"> Under 5K</label>
       </div>
     </div>
 
@@ -389,14 +394,6 @@ footer a{color:#ebe599;text-decoration:none}
     <div class="sb-section">
       <label class="sb-label" for="f-year">Year</label>
       <select id="f-year"><option value="">All Years</option><option>2002</option><option>2005</option><option>2006</option><option>2007</option><option>2008</option><option>2009</option><option>2010</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
-    </div>
-
-    <hr class="sb-divider">
-
-    <!-- Size -->
-    <div class="sb-section">
-      <label class="sb-label" for="f-sqft">Building Size</label>
-      <select id="f-sqft"><option value="">All Sizes</option><option value="small">Under 10K sq ft</option><option value="medium">10K–50K sq ft</option><option value="large">50K–200K sq ft</option><option value="mega">200K+ sq ft</option></select>
     </div>
 
     <hr class="sb-divider">
@@ -668,12 +665,13 @@ const cColors={'Los Angeles':'#f43f5e','San Bernardino':'#fb923c','Riverside':'#
 const cTag={'Los Angeles':'tag-la','San Bernardino':'tag-sb','Riverside':'tag-rv','Orange':'tag-oc'};
 
 // ============== STATE ==============
-const AppState={tab:'fires',nf:{county:'',type:'',year:'',search:'',sqft:'',btype:''},includeSmall:false,includeUnknown:false,sort:{col:'dt',dir:-1}};
+const SZ_DEFAULTS={'500k':true,'250k':true,'100k':true,'50k':true,'25k':true,'10k':true,'none':true,'5k':false,'sub5k':false};
+const AppState={tab:'fires',nf:{county:'',type:'',year:'',search:'',btype:''},sizeTiers:Object.assign({},SZ_DEFAULTS),sort:{col:'dt',dir:-1}};
 function isWH(d){return d.puc==='891';}
 
 function filterData(){
-  let d=NFIRS_DATA;const f=AppState.nf;
-  d=d.filter(r=>{if(r.sqft>=10000)return true;if(r.sqft>0&&r.sqft<10000)return AppState.includeSmall;return AppState.includeUnknown;});
+  let d=NFIRS_DATA;const f=AppState.nf;const st=AppState.sizeTiers;
+  d=d.filter(r=>{const sq=r.sqft;if(!sq||sq<=0)return st['none'];if(sq<5000)return st['sub5k'];if(sq<10000)return st['5k'];if(sq<25000)return st['10k'];if(sq<50000)return st['25k'];if(sq<100000)return st['50k'];if(sq<250000)return st['100k'];if(sq<500000)return st['250k'];return st['500k'];});
   if(f.county)d=d.filter(r=>r.co===f.county);
   if(f.type){
     if(f.type==='outside')d=d.filter(r=>['118','150','151','152','154','155','160','161','162'].includes(r.tc));
@@ -681,12 +679,6 @@ function filterData(){
     else d=d.filter(r=>r.tc===f.type);
   }
   if(f.year)d=d.filter(r=>r.yr===parseInt(f.year));
-  if(f.sqft){
-    if(f.sqft==='small')d=d.filter(r=>r.sqft>0&&r.sqft<10000);
-    else if(f.sqft==='medium')d=d.filter(r=>r.sqft>=10000&&r.sqft<50000);
-    else if(f.sqft==='large')d=d.filter(r=>r.sqft>=50000&&r.sqft<200000);
-    else if(f.sqft==='mega')d=d.filter(r=>r.sqft>=200000);
-  }
   if(f.btype==='warehouse')d=d.filter(r=>isWH(r));
   else if(f.btype==='building')d=d.filter(r=>!isWH(r));
   if(f.search){const s=f.search.toUpperCase();d=d.filter(r=>(r.ci+' '+r.addr+' '+r.ty).toUpperCase().includes(s))}
@@ -1026,19 +1018,14 @@ document.getElementById('color-type').addEventListener('click',()=>setColorMode(
 
 document.getElementById('f-county').addEventListener('change',e=>{AppState.nf.county=e.target.value;render()});
 document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year=e.target.value;syncImageryToYear(e.target.value);render()});
-document.getElementById('f-sqft').addEventListener('change',e=>{AppState.nf.sqft=e.target.value;render()});
 ['all','warehouse','building'].forEach(v=>{document.getElementById('f-btype-'+v).addEventListener('click',()=>{AppState.nf.btype=v==='all'?'':v;['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k===v));render();});});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
-function updateSizeNote(){const s=AppState.includeSmall,u=AppState.includeUnknown;document.getElementById('legend-small-note').textContent=s&&u?'Showing all fires':s?'Showing all reported building sizes':u?'Showing 10,000+ sq ft and unreported sizes':'Showing fires at 10,000+ sq ft buildings';}
-document.getElementById('f-include-small').addEventListener('change',e=>{AppState.includeSmall=e.target.checked;updateSizeNote();render()});
-document.getElementById('f-include-unknown').addEventListener('change',e=>{AppState.includeUnknown=e.target.checked;updateSizeNote();render()});
+Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).addEventListener('change',e=>{AppState.sizeTiers[k]=e.target.checked;render();});});
 document.getElementById('btn-about').addEventListener('click',()=>{const p=document.getElementById('about-panel');const open=p.classList.toggle('open');document.getElementById('btn-about').textContent=open?'✕ Close':'? About this data';});
-document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',sqft:'',btype:''};AppState.includeSmall=false;AppState.includeUnknown=false;
-  document.getElementById('f-county').value='';document.getElementById('f-sqft').value='';
+document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',btype:''};Object.assign(AppState.sizeTiers,SZ_DEFAULTS);
+  document.getElementById('f-county').value='';
   document.getElementById('f-year').value='';document.getElementById('f-search').value='';
-  document.getElementById('f-include-small').checked=false;
-  document.getElementById('f-include-unknown').checked=false;
-  updateSizeNote();
+  Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).checked=SZ_DEFAULTS[k];});
   ['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k==='all'));
   syncImageryToYear('');render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
