@@ -109,6 +109,7 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .yr-toggle-all:hover{color:var(--text2)}
 #map{width:100%;height:100%;z-index:1}
 #deck-container{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;display:none;border-radius:10px;overflow:hidden}
+#spike-toggle{position:absolute;bottom:10px;right:8px;z-index:30}
 /* ── CHARTS ── */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
 @media(max-width:850px){.charts{grid-template-columns:1fr}}
@@ -336,7 +337,7 @@ footer a{color:#ebe599;text-decoration:none}
 <!-- MAP ROW -->
 <div class="map-row">
   <!-- MAP -->
-  <div class="map-wrap"><div id="map"></div><div id="deck-container"></div></div>
+  <div class="map-wrap"><div id="map"></div><div id="deck-container"></div><button id="spike-toggle" class="base-toggle-btn">3D Spikes</button></div>
 
   <!-- SIDEBAR -->
   <div class="map-sidebar">
@@ -716,23 +717,15 @@ const map=L.map('map',{center:[33.95,-117.75],zoom:9,zoomControl:true});
 
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri, Maxar, GeoEye, USGS',maxZoom:19}).addTo(map);
 
-const heatCtrl=L.control({position:'bottomright'});
-heatCtrl.onAdd=function(){
-  const btn=document.createElement('button');
-  btn.id='heat-toggle';btn.className='base-toggle-btn';btn.textContent='3D Spikes';
-  L.DomEvent.on(btn,'click',function(e){
-    L.DomEvent.stopPropagation(e);
-    mapView=mapView==='markers'?'spikes':'markers';
-    btn.textContent=mapView==='spikes'?'Markers':'3D Spikes';
-    btn.classList.toggle('active',mapView==='spikes');
-    const dc=document.getElementById('deck-container');
-    if(mapView==='spikes'){dc.style.display='block';}
-    else{dc.style.display='none';if(deckInstance){deckInstance.finalize();deckInstance=null;}}
-    render();
-  });
-  return btn;
-};
-heatCtrl.addTo(map);
+document.getElementById('spike-toggle').addEventListener('click',function(){
+  mapView=mapView==='markers'?'spikes':'markers';
+  this.textContent=mapView==='spikes'?'Markers':'3D Spikes';
+  this.classList.toggle('active',mapView==='spikes');
+  const dc=document.getElementById('deck-container');
+  if(mapView==='spikes'){dc.style.display='block';}
+  else{dc.style.display='none';if(deckInstance){deckInstance.finalize();deckInstance=null;}}
+  render();
+});
 
 
 
@@ -778,21 +771,6 @@ function sqftSpikeHeight(sq){
   return 300;
 }
 
-function createConeMesh(segments){
-  const inv=1/Math.sqrt(2);
-  const pos=[],nrm=[],idx=[];
-  for(let i=0;i<segments;i++){
-    const a=(i/segments)*Math.PI*2,cx=Math.cos(a),cy=Math.sin(a);
-    pos.push(cx,cy,0);
-    nrm.push(cx*inv,cy*inv,inv);
-  }
-  pos.push(0,0,1);nrm.push(0,0,1);
-  const apex=segments;
-  for(let i=0;i<segments;i++)idx.push(i,(i+1)%segments,apex);
-  return{positions:new Float32Array(pos),normals:new Float32Array(nrm),indices:new Uint32Array(idx)};
-}
-const CONE_MESH=createConeMesh(6);
-
 function makeSpikeLayers(points){
   return[
     new deck.TileLayer({
@@ -814,15 +792,19 @@ function makeSpikeLayers(points){
       stroked:false,
       pickable:false
     }),
-    new deck.SimpleMeshLayer({
+    new deck.ColumnLayer({
       id:'spikes',
       data:points,
-      mesh:CONE_MESH,
-      getPosition:d=>d.pos,
-      getScale:d=>[800,800,d.h],
-      getColor:[255,50,50,217],
+      diskResolution:6,
+      radius:500,
+      extruded:true,
       pickable:false,
-      material:{ambient:0.5,diffuse:0.8,shininess:48,specularColor:[255,180,80]}
+      getPosition:d=>d.pos,
+      getElevation:d=>d.h,
+      getFillColor:[255,50,50,217],
+      getLineColor:[255,120,50,230],
+      lineWidthMinPixels:1,
+      material:{ambient:0.4,diffuse:0.8,shininess:32,specularColor:[255,180,80]}
     })
   ];
 }
