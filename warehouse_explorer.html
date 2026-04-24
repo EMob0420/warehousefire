@@ -137,6 +137,8 @@ tbody tr:hover{background:rgba(244,63,94,.03)}
 td{padding:.45rem .6rem;color:var(--text2)}
 .fire-name{color:var(--text);font-weight:500}
 .county-tag{display:inline-block;padding:.15rem .5rem;border-radius:3px;font-size:.78rem;font-weight:600}
+.tag-wh{background:rgba(255,106,0,.15);color:#ff8c42}
+.tag-bld{background:rgba(255,230,0,.1);color:#c9b800}
 .tag-la{background:rgba(244,63,94,.12);color:#fda4af}
 .tag-sb{background:rgba(251,146,60,.12);color:#fdba74}
 .tag-rv{background:rgba(250,204,21,.1);color:#fde047}
@@ -368,7 +370,7 @@ footer a{color:#ebe599;text-decoration:none}
             <input type="checkbox" id="f-include-unknown">
             Include fires with no reported size
           </label>
-          <span class="legend-small-note" id="legend-small-note">Showing confirmed warehouses (10,000+ sq ft)</span>
+          <span class="legend-small-note" id="legend-small-note">Showing fires at 10,000+ sq ft buildings</span>
         </div>
       </div>
     </div>
@@ -869,7 +871,7 @@ function buildMarkers(data){
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
     const m=L.marker(ll,{icon:makeIcon(d.co,sz,d.pl,d.tc,d.cause,d.sqft,d.puc),causeKey:normCause(d.cause),cityKey:d.ci,nfirsData:d});
     const pop=document.createElement('div');
-    const pt=document.createElement('div');pt.className='popup-type';pt.textContent=normType(d.tc);pop.appendChild(pt);
+    const pt=document.createElement('div');pt.className='popup-type';pt.textContent=d.puc==='891'?'Warehouse (PUC 891)':normType(d.tc);pop.appendChild(pt);
     const ptl=document.createElement('div');ptl.className='popup-title';ptl.textContent=d.addr||'(no address)';pop.appendChild(ptl);
     const pci=document.createElement('div');pci.className='popup-detail';pci.style.fontWeight='600';pci.textContent=toTitleCase(d.ci)+', '+d.co+' County';pop.appendChild(pci);
     const pd=document.createElement('div');pd.className='popup-detail';pd.textContent=d.dt+' | ZIP '+d.zip;pop.appendChild(pd);
@@ -967,7 +969,7 @@ function updateCharts(data){
 function renderTable(data){
   const thead=document.getElementById('nfirs-thead');const tbody=document.getElementById('nfirs-tbody');
   if(!thead.firstChild){const tr=document.createElement('tr');
-    [['dt','Date'],['ci','City'],['co','County'],['addr','Address'],['sqft','Sq Ft'],['pl','Prop Loss'],['cl','Cont Loss']].forEach(([k,l])=>{
+    [['dt','Date'],['ci','City'],['co','County'],['puc','Type'],['addr','Address'],['sqft','Sq Ft'],['pl','Prop Loss'],['cl','Cont Loss']].forEach(([k,l])=>{
       const th=document.createElement('th');th.textContent=l;th.addEventListener('click',()=>{AppState.sort.dir=AppState.sort.col===k?AppState.sort.dir*-1:-1;AppState.sort.col=k;render()});tr.appendChild(th)});
     thead.appendChild(tr)}
   while(tbody.firstChild)tbody.removeChild(tbody.firstChild);
@@ -976,13 +978,14 @@ function renderTable(data){
     const t1=document.createElement('td');t1.textContent=d.dt;tr.appendChild(t1);
     const t3=document.createElement('td');t3.className='fire-name';t3.textContent=toTitleCase(d.ci);tr.appendChild(t3);
     const t4=document.createElement('td');const sp=document.createElement('span');sp.className='county-tag '+(cTag[d.co]||'');sp.textContent=d.co+' County';t4.appendChild(sp);tr.appendChild(t4);
+    const ttype=document.createElement('td');const spt=document.createElement('span');spt.className='county-tag '+(d.puc==='891'?'tag-wh':'tag-bld');spt.textContent=d.puc==='891'?'Warehouse':'Building Fire';ttype.appendChild(spt);tr.appendChild(ttype);
     const t5=document.createElement('td');t5.textContent=d.addr;tr.appendChild(t5);
     const tsq=document.createElement('td');tsq.style.fontFamily="'Space Mono',monospace";tsq.textContent=d.sqft>0?d.sqft.toLocaleString():'-';if(d.sqft<=0)tsq.style.color='var(--text3)';tr.appendChild(tsq);
     const t6=document.createElement('td');t6.className=d.pl>0?'loss':'loss-zero';t6.textContent=d.pl>0?'$'+d.pl.toLocaleString():'-';tr.appendChild(t6);
     const t7=document.createElement('td');t7.className=d.cl>0?'loss':'loss-zero';t7.textContent=d.cl>0?'$'+d.cl.toLocaleString():'-';tr.appendChild(t7);
     tbody.appendChild(tr);
   });
-  if(data.length>500){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=7;td.textContent='Showing 500 of '+data.length+' records. Use filters to narrow.';td.style.cssText='text-align:center;color:var(--text3);padding:1rem';tr.appendChild(td);tbody.appendChild(tr)}
+  if(data.length>500){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=8;td.textContent='Showing 500 of '+data.length+' records. Use filters to narrow.';td.style.cssText='text-align:center;color:var(--text3);padding:1rem';tr.appendChild(td);tbody.appendChild(tr)}
 }
 
 // ============== TABS ==============
@@ -1026,7 +1029,7 @@ document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year
 document.getElementById('f-sqft').addEventListener('change',e=>{AppState.nf.sqft=e.target.value;render()});
 ['all','warehouse','building'].forEach(v=>{document.getElementById('f-btype-'+v).addEventListener('click',()=>{AppState.nf.btype=v==='all'?'':v;['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k===v));render();});});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
-function updateSizeNote(){const s=AppState.includeSmall,u=AppState.includeUnknown;document.getElementById('legend-small-note').textContent=s&&u?'Showing all fires':s?'Showing all building sizes':u?'Showing 10,000+ sq ft and unreported sizes':'Showing confirmed warehouses (10,000+ sq ft)';}
+function updateSizeNote(){const s=AppState.includeSmall,u=AppState.includeUnknown;document.getElementById('legend-small-note').textContent=s&&u?'Showing all fires':s?'Showing all reported building sizes':u?'Showing 10,000+ sq ft and unreported sizes':'Showing fires at 10,000+ sq ft buildings';}
 document.getElementById('f-include-small').addEventListener('change',e=>{AppState.includeSmall=e.target.checked;updateSizeNote();render()});
 document.getElementById('f-include-unknown').addEventListener('change',e=>{AppState.includeUnknown=e.target.checked;updateSizeNote();render()});
 document.getElementById('btn-about').addEventListener('click',()=>{const p=document.getElementById('about-panel');const open=p.classList.toggle('open');document.getElementById('btn-about').textContent=open?'✕ Close':'? About this data';});
