@@ -162,7 +162,7 @@ footer a{color:var(--accent);text-decoration:none}
 .about-tab-section h2{font-size:1.375rem;font-weight:700;text-align:center;margin-bottom:1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .about-tab-section p{font-size:.92rem;color:var(--text2);line-height:1.75;margin-bottom:1.875rem}
 .about-tab-section p:last-child{margin-bottom:0}
-#ie-context-map{height:360px;width:100%;border-radius:8px;border:1px solid var(--border);margin:1.25rem auto 0;max-width:750px;box-sizing:border-box}
+#ie-context-map{height:420px;width:100%;display:block;border-radius:8px;border:1px solid var(--border);margin:1.25rem auto 0;max-width:750px;box-sizing:border-box}
 .ie-map-legend{display:flex;gap:1.25rem;justify-content:center;flex-wrap:wrap;margin:.75rem auto 0;max-width:750px;font-size:.72rem;color:var(--text3)}
 .ie-map-legend span{display:flex;align-items:center;gap:.35rem}
 .leaflet-tooltip.ie-tip{background:rgba(9,9,11,.88);border:1px solid #3f3f46;color:#e4e4e7;font-size:.72rem;padding:.2rem .45rem;border-radius:4px;box-shadow:none;font-family:'DM Sans',sans-serif}
@@ -877,7 +877,7 @@ function switchTab(tabId){
     setTimeout(()=>map.invalidateSize(),50);render();
   }
   if(tabId==='vacancy'&&!_marketInited){initMarket();_marketInited=true;}
-  if(tabId==='about'&&ieMap)setTimeout(()=>ieMap.invalidateSize(),50);
+  if(tabId==='about'){_initIeMap();if(ieMap)[50,300].forEach(d=>setTimeout(()=>ieMap.invalidateSize(),d));}
 }
 document.querySelectorAll('.tab-nav .tab-btn').forEach(btn=>{
   btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
@@ -1008,10 +1008,13 @@ render();setTimeout(()=>map.invalidateSize(),100);
 
 // ============== IE CONTEXT MAP ==============
 let ieMap;
-window.addEventListener('load',function(){
+function _initIeMap(){
+  if(ieMap)return;
+  const el=document.getElementById('ie-context-map');
+  if(!el||el.offsetWidth===0)return;
   ieMap=L.map('ie-context-map',{center:[33.93,-118.0],zoom:9,zoomControl:true,scrollWheelZoom:false,attributionControl:false});
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Esri, Maxar, GeoEye, USGS'}).addTo(ieMap);
-  setTimeout(()=>ieMap.invalidateSize(),300);
+  [100,400,900].forEach(d=>setTimeout(()=>ieMap.invalidateSize(),d));
 
   function mkIcon(emoji,color){
     return L.divIcon({className:'',iconSize:[28,28],iconAnchor:[14,14],
@@ -1036,7 +1039,9 @@ window.addEventListener('load',function(){
 
   apLayer.addTo(ieMap);
   L.control.layers(null,{'Airports & Ports':apLayer},{collapsed:false,position:'topright'}).addTo(ieMap);
-});
+}
+document.addEventListener('DOMContentLoaded',function(){setTimeout(_initIeMap,50)});
+window.addEventListener('load',_initIeMap);
 </script>
 </body>
 </html>
