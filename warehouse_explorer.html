@@ -1010,10 +1010,8 @@ render();setTimeout(()=>map.invalidateSize(),100);
 let ieMap;
 function _initIeMap(){
   if(ieMap)return;
-  const el=document.getElementById('ie-context-map');
-  if(!el||el.offsetWidth===0)return;
   ieMap=L.map('ie-context-map',{center:[33.93,-118.0],zoom:9,zoomControl:true,scrollWheelZoom:false,attributionControl:false});
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Esri, Maxar, GeoEye, USGS'}).addTo(ieMap);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(ieMap);
   [100,400,900].forEach(d=>setTimeout(()=>ieMap.invalidateSize(),d));
 
   function mkIcon(emoji,color){
