@@ -11,6 +11,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -107,6 +108,7 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .yr-toggle-all{background:none;border:none;color:var(--text3);font-size:.68rem;cursor:pointer;padding:0;font-family:inherit;text-decoration:underline;text-underline-offset:2px;display:block;margin-bottom:.3rem}
 .yr-toggle-all:hover{color:var(--text2)}
 #map{width:100%;height:100%;z-index:1}
+#deck-container{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;display:none;border-radius:10px;overflow:hidden}
 /* ── CHARTS ── */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
 @media(max-width:850px){.charts{grid-template-columns:1fr}}
@@ -332,7 +334,7 @@ footer a{color:#ebe599;text-decoration:none}
 <!-- MAP ROW -->
 <div class="map-row">
   <!-- MAP -->
-  <div class="map-wrap"><div id="map"></div><div id="img-info"></div></div>
+  <div class="map-wrap"><div id="map"></div><div id="deck-container"></div><div id="img-info"></div></div>
 
   <!-- SIDEBAR -->
   <div class="map-sidebar">
@@ -735,12 +737,15 @@ toggleCtrl.addTo(map);
 const heatCtrl=L.control({position:'bottomright'});
 heatCtrl.onAdd=function(){
   const btn=document.createElement('button');
-  btn.id='heat-toggle';btn.className='base-toggle-btn';btn.textContent='Heat map';
+  btn.id='heat-toggle';btn.className='base-toggle-btn';btn.textContent='3D Spikes';
   L.DomEvent.on(btn,'click',function(e){
     L.DomEvent.stopPropagation(e);
-    mapView=mapView==='markers'?'heat':'markers';
-    btn.textContent=mapView==='heat'?'Markers':'Heat map';
-    btn.classList.toggle('active',mapView==='heat');
+    mapView=mapView==='markers'?'spikes':'markers';
+    btn.textContent=mapView==='spikes'?'Markers':'3D Spikes';
+    btn.classList.toggle('active',mapView==='spikes');
+    const dc=document.getElementById('deck-container');
+    if(mapView==='spikes'){dc.style.display='block';}
+    else{dc.style.display='none';if(deckInstance){deckInstance.finalize();deckInstance=null;}}
     render();
   });
   return btn;
@@ -821,30 +826,70 @@ function makeIcon(size,loss,sqft,puc){
 }
 const cluster=L.layerGroup();
 let mapView='markers';
+let deckInstance=null;
 
-function sqftGlowRadius(sq){
-  if(!sq||sq<=0)return 8;
-  if(sq>=500000)return 40;
-  if(sq>=250000)return 32;
-  if(sq>=100000)return 25;
-  if(sq>=50000)return 18;
-  if(sq>=25000)return 14;
-  if(sq>=10000)return 10;
-  if(sq>=5000)return 6;
-  return 4;
+function sqftSpikeHeight(sq){
+  if(!sq||sq<=0)return 800;
+  if(sq>=500000)return 15000;
+  if(sq>=250000)return 10000;
+  if(sq>=100000)return 7000;
+  if(sq>=50000)return 4000;
+  if(sq>=25000)return 2500;
+  if(sq>=10000)return 1500;
+  if(sq>=5000)return 500;
+  return 300;
 }
 
-function buildHeatmap(data){
-  cluster.clearLayers();
-  data.forEach(d=>{
-    const ll=getNfirsCoords(d);const r=sqftGlowRadius(d.sqft);const size=r*2;
-    const uid='hg'+Math.random().toString(36).slice(2,7);
-    const icon=L.divIcon({className:'',iconSize:[size,size],iconAnchor:[r,r],
-      html:`<svg width="${size}" height="${size}" style="overflow:visible;pointer-events:none"><defs><radialGradient id="${uid}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ef4444" stop-opacity="0.6"/><stop offset="45%" stop-color="#ff6a00" stop-opacity="0.3"/><stop offset="100%" stop-color="#ff6a00" stop-opacity="0"/></radialGradient></defs><circle cx="${r}" cy="${r}" r="${r}" fill="url(#${uid})"/></svg>`
+function makeSpikeLayers(points){
+  return[
+    new deck.TileLayer({
+      id:'basemap',
+      data:['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+            'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+            'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+            'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+      minZoom:0,maxZoom:19,tileSize:256,
+      renderSubLayers:props=>{
+        const{bbox:{west,south,east,north}}=props.tile;
+        return new deck.BitmapLayer(props,{data:null,image:props.data,bounds:[west,south,east,north]});
+      }
+    }),
+    new deck.ColumnLayer({
+      id:'spikes',
+      data:points,
+      diskResolution:12,
+      radius:150,
+      extruded:true,
+      pickable:false,
+      getPosition:d=>d.pos,
+      getElevation:d=>d.h,
+      getFillColor:[239,68,68,178],
+      getLineColor:[255,100,0,200],
+      lineWidthMinPixels:0
+    })
+  ];
+}
+
+function buildSpikes(data){
+  const container=document.getElementById('deck-container');
+  const points=data.map(d=>{const ll=getNfirsCoords(d);return{pos:[ll[1],ll[0]],h:sqftSpikeHeight(d.sqft)};});
+  if(deckInstance){
+    deckInstance.setProps({layers:makeSpikeLayers(points)});
+  }else{
+    const canvas=document.createElement('canvas');
+    canvas.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%';
+    container.innerHTML='';
+    container.appendChild(canvas);
+    deckInstance=new deck.Deck({
+      canvas,
+      width:container.offsetWidth||700,
+      height:container.offsetHeight||600,
+      views:new deck.MapView(),
+      initialViewState:{longitude:-117.5,latitude:34.0,zoom:8,pitch:45,bearing:0},
+      controller:true,
+      layers:makeSpikeLayers(points)
     });
-    cluster.addLayer(L.marker(ll,{icon}));
-  });
-  map.addLayer(cluster);
+  }
 }
 
 function buildMarkers(data){
@@ -1065,7 +1110,7 @@ document.querySelectorAll('.size-tier-btn').forEach((btn,i)=>{
 });
 
 // ============== RENDER ==============
-function render(){const data=filterData();renderStats(data);updateSizeCompare(data);if(AppState.tab==='fires'){updateCharts(data);renderTable(data);if(mapView==='heat')buildHeatmap(data);else buildMarkers(data);}}
+function render(){const data=filterData();renderStats(data);updateSizeCompare(data);if(AppState.tab==='fires'){updateCharts(data);renderTable(data);if(mapView==='spikes')buildSpikes(data);else buildMarkers(data);}}
 
 // ============== MARKET DATA ==============
 function initMarket(){
