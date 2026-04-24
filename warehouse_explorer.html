@@ -51,7 +51,7 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .stats-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.5rem 1rem;margin-bottom:1.25rem}
 .size-compare-tool{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem}
 .size-compare-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.7rem}
-.size-compare-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);font-weight:700}
+.size-compare-label{font-size:.78rem;font-weight:700;color:#ebe599;letter-spacing:-.01em}
 .size-compare-hint{font-size:.72rem;color:var(--text3)}
 .size-tier-btns{display:flex;flex-wrap:wrap;gap:.35rem}
 .size-tier-btn{padding:.28rem .65rem;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:.76rem;font-weight:600;cursor:pointer;font-family:'Space Mono',monospace;transition:all .15s}
@@ -59,6 +59,8 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .size-tier-btn.active{background:#ebe599;color:#09090b;border-color:#ebe599}
 .size-compare-panel{display:none;border-top:1px solid var(--border);padding-top:.9rem;margin-top:.8rem}
 .size-compare-panel.open{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:start}
+.size-compare-ref{display:flex;gap:.85rem;align-items:flex-start}
+.sc-icon{flex-shrink:0;line-height:0;opacity:.9;margin-top:.1rem}
 .size-compare-ref strong{display:block;font-size:.82rem;color:#ebe599;margin-bottom:.3rem;font-family:'Space Mono',monospace}
 .size-compare-ref p{font-size:.88rem;color:var(--text2);line-height:1.65;margin:0}
 .size-compare-count{text-align:right;flex-shrink:0}
@@ -440,7 +442,7 @@ footer a{color:#ebe599;text-decoration:none}
 <!-- SIZE COMPARISON TOOL -->
 <div class="size-compare-tool">
   <div class="size-compare-header">
-    <span class="size-compare-label">Building Size Reference</span>
+    <span class="size-compare-label">Footprint in Perspective</span>
     <span class="size-compare-hint">Select a tier to see a comparison</span>
   </div>
   <div class="size-tier-btns">
@@ -456,8 +458,11 @@ footer a{color:#ebe599;text-decoration:none}
   </div>
   <div class="size-compare-panel" id="size-compare-panel">
     <div class="size-compare-ref">
-      <strong id="sc-size-label"></strong>
-      <p id="sc-ref-text"></p>
+      <div class="sc-icon" id="sc-icon"></div>
+      <div>
+        <strong id="sc-size-label"></strong>
+        <p id="sc-ref-text"></p>
+      </div>
     </div>
     <div class="size-compare-count">
       <div class="sc-count-val" id="sc-count">—</div>
@@ -1020,16 +1025,19 @@ document.getElementById('btn-export').addEventListener('click',()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='warehouse_fires_export.csv';a.click()});
 
 // ============== SIZE COMPARISON TOOL ==============
+const _COURT='<svg width="52" height="30" viewBox="0 0 52 30" fill="none"><rect x="1.5" y="1.5" width="49" height="27" rx="1.5" stroke="#ebe599" stroke-width="1.5"/><line x1="26" y1="1.5" x2="26" y2="28.5" stroke="#ebe599" stroke-width="1" opacity=".6"/><circle cx="26" cy="15" r="5" stroke="#ebe599" stroke-width="1" opacity=".6"/><path d="M1.5 9h8M1.5 21h8" stroke="#ebe599" stroke-width="1" opacity=".5"/><path d="M42.5 9h8M42.5 21h8" stroke="#ebe599" stroke-width="1" opacity=".5"/></svg>';
+const _FIELD='<svg width="66" height="30" viewBox="0 0 66 30" fill="none"><rect x="1.5" y="1.5" width="63" height="27" rx="1.5" stroke="#ebe599" stroke-width="1.5"/><line x1="9" y1="1.5" x2="9" y2="28.5" stroke="#ebe599" stroke-width="1" opacity=".5"/><line x1="57" y1="1.5" x2="57" y2="28.5" stroke="#ebe599" stroke-width="1" opacity=".5"/><line x1="21" y1="1.5" x2="21" y2="28.5" stroke="#ebe599" stroke-width=".75" stroke-dasharray="3 2" opacity=".4"/><line x1="33" y1="1.5" x2="33" y2="28.5" stroke="#ebe599" stroke-width=".75" stroke-dasharray="3 2" opacity=".4"/><line x1="45" y1="1.5" x2="45" y2="28.5" stroke="#ebe599" stroke-width=".75" stroke-dasharray="3 2" opacity=".4"/></svg>';
+const _BLOCK='<svg width="42" height="42" viewBox="0 0 42 42" fill="none"><rect x="1.5" y="1.5" width="39" height="39" rx="1.5" stroke="#ebe599" stroke-width="1.5"/><rect x="5" y="5" width="14" height="14" fill="#ebe599" fill-opacity=".2" rx="1"/><rect x="23" y="5" width="14" height="14" fill="#ebe599" fill-opacity=".2" rx="1"/><rect x="5" y="23" width="14" height="14" fill="#ebe599" fill-opacity=".2" rx="1"/><rect x="23" y="23" width="14" height="14" fill="#ebe599" fill-opacity=".2" rx="1"/></svg>';
 const SIZE_TIERS=[
-  {label:'5,000 sq ft',min:5000,max:10000,equiv:'About one basketball court (94×50 ft = 4,700 sq ft). At this scale a structure fire can cross the entire floor in minutes.'},
-  {label:'10,000 sq ft',min:10000,max:25000,equiv:'About two basketball courts side by side — the minimum footprint used in this tool to classify a building as warehouse-scale.'},
-  {label:'25,000 sq ft',min:25000,max:50000,equiv:'Roughly half a football field. Typical of light industrial or regional storage facilities.'},
-  {label:'50,000 sq ft',min:50000,max:100000,equiv:'Close to a full football field (57,600 sq ft including end zones). Common size for mid-scale warehouses and staging facilities.'},
-  {label:'100,000 sq ft',min:100000,max:250000,equiv:'About two football fields end to end — roughly the footprint of a city block. Typical of regional logistics centers.'},
-  {label:'250,000 sq ft',min:250000,max:500000,equiv:'Nearly five football fields. The scale of a major e-commerce fulfillment center serving a metro region.'},
-  {label:'500,000 sq ft',min:500000,max:700000,equiv:'About nine football fields — roughly 11 acres. Facilities at this scale typically employ hundreds to thousands of workers across multiple shifts.'},
-  {label:'700,000 sq ft',min:700000,max:1000000,equiv:'Around 12 football fields, or 16 acres. Among the largest distribution centers in North America.'},
-  {label:'1,000,000+ sq ft',min:1000000,max:Infinity,equiv:'More than 17 football fields — nearly 23 acres under one roof. The scale of the largest Amazon and Walmart fulfillment centers, visible as solid gray blocks in satellite imagery.'}
+  {label:'5,000 sq ft',min:5000,max:10000,icon:_COURT,equiv:'About one basketball court (94×50 ft = 4,700 sq ft). At this scale a structure fire can cross the entire floor in minutes.'},
+  {label:'10,000 sq ft',min:10000,max:25000,icon:_COURT,equiv:'About two basketball courts side by side — the minimum footprint used in this tool to classify a building as warehouse-scale.'},
+  {label:'25,000 sq ft',min:25000,max:50000,icon:_FIELD,equiv:'Roughly half a football field. Typical of light industrial or regional storage facilities.'},
+  {label:'50,000 sq ft',min:50000,max:100000,icon:_FIELD,equiv:'Close to a full football field (57,600 sq ft including end zones). Common size for mid-scale warehouses and staging facilities.'},
+  {label:'100,000 sq ft',min:100000,max:250000,icon:_FIELD,equiv:'About two football fields end to end — roughly the footprint of a city block. Typical of regional logistics centers.'},
+  {label:'250,000 sq ft',min:250000,max:500000,icon:_FIELD,equiv:'Nearly five football fields. The scale of a major e-commerce fulfillment center serving a metro region.'},
+  {label:'500,000 sq ft',min:500000,max:700000,icon:_BLOCK,equiv:'About nine football fields — roughly 11 acres. Facilities at this scale typically employ hundreds to thousands of workers across multiple shifts.'},
+  {label:'700,000 sq ft',min:700000,max:1000000,icon:_BLOCK,equiv:'Around 12 football fields, or 16 acres. Among the largest distribution centers in North America.'},
+  {label:'1,000,000+ sq ft',min:1000000,max:Infinity,icon:_BLOCK,equiv:'More than 17 football fields — nearly 23 acres under one roof. The scale of the largest Amazon and Walmart fulfillment centers, visible as solid gray blocks in satellite imagery.'}
 ];
 let _activeSizeTier=null,_lastData=[];
 function updateSizeCompare(data){
@@ -1047,6 +1055,7 @@ document.querySelectorAll('.size-tier-btn').forEach((btn,i)=>{
     else{
       _activeSizeTier=i;btn.classList.add('active');
       const t=SIZE_TIERS[i];
+      document.getElementById('sc-icon').innerHTML=t.icon;
       document.getElementById('sc-size-label').textContent=t.label;
       document.getElementById('sc-ref-text').textContent=t.equiv;
       document.getElementById('sc-count').textContent=_lastData.filter(d=>d.sqft>=t.min&&d.sqft<t.max).length.toLocaleString();
