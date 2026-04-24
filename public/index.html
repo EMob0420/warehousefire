@@ -364,7 +364,11 @@ footer a{color:#ebe599;text-decoration:none}
             <input type="checkbox" id="f-include-small">
             Include small buildings (&lt;10K sq ft)
           </label>
-          <span class="legend-small-note" id="legend-small-note">Showing 10,000+ sq ft buildings only</span>
+          <label>
+            <input type="checkbox" id="f-include-unknown">
+            Include fires with no reported size
+          </label>
+          <span class="legend-small-note" id="legend-small-note">Showing confirmed warehouses (10,000+ sq ft)</span>
         </div>
       </div>
     </div>
@@ -662,12 +666,12 @@ const cColors={'Los Angeles':'#f43f5e','San Bernardino':'#fb923c','Riverside':'#
 const cTag={'Los Angeles':'tag-la','San Bernardino':'tag-sb','Riverside':'tag-rv','Orange':'tag-oc'};
 
 // ============== STATE ==============
-const AppState={tab:'fires',nf:{county:'',type:'',year:'',search:'',sqft:'',btype:''},includeSmall:false,sort:{col:'dt',dir:-1}};
+const AppState={tab:'fires',nf:{county:'',type:'',year:'',search:'',sqft:'',btype:''},includeSmall:false,includeUnknown:false,sort:{col:'dt',dir:-1}};
 function isWH(d){return d.sqft>=10000;}
 
 function filterData(){
   let d=NFIRS_DATA;const f=AppState.nf;
-  if(!AppState.includeSmall)d=d.filter(r=>r.sqft>=10000);
+  d=d.filter(r=>{if(r.sqft>=10000)return true;if(r.sqft>0&&r.sqft<10000)return AppState.includeSmall;return AppState.includeUnknown;});
   if(f.county)d=d.filter(r=>r.co===f.county);
   if(f.type){
     if(f.type==='outside')d=d.filter(r=>['118','150','151','152','154','155','160','161','162'].includes(r.tc));
@@ -1022,13 +1026,16 @@ document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year
 document.getElementById('f-sqft').addEventListener('change',e=>{AppState.nf.sqft=e.target.value;render()});
 ['all','warehouse','building'].forEach(v=>{document.getElementById('f-btype-'+v).addEventListener('click',()=>{AppState.nf.btype=v==='all'?'':v;['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k===v));render();});});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
-document.getElementById('f-include-small').addEventListener('change',e=>{AppState.includeSmall=e.target.checked;document.getElementById('legend-small-note').textContent=e.target.checked?'Showing all building sizes':'Showing 10,000+ sq ft buildings only';render()});
+function updateSizeNote(){const s=AppState.includeSmall,u=AppState.includeUnknown;document.getElementById('legend-small-note').textContent=s&&u?'Showing all fires':s?'Showing all building sizes':u?'Showing 10,000+ sq ft and unreported sizes':'Showing confirmed warehouses (10,000+ sq ft)';}
+document.getElementById('f-include-small').addEventListener('change',e=>{AppState.includeSmall=e.target.checked;updateSizeNote();render()});
+document.getElementById('f-include-unknown').addEventListener('change',e=>{AppState.includeUnknown=e.target.checked;updateSizeNote();render()});
 document.getElementById('btn-about').addEventListener('click',()=>{const p=document.getElementById('about-panel');const open=p.classList.toggle('open');document.getElementById('btn-about').textContent=open?'✕ Close':'? About this data';});
-document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',sqft:'',btype:''};AppState.includeSmall=false;
+document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',sqft:'',btype:''};AppState.includeSmall=false;AppState.includeUnknown=false;
   document.getElementById('f-county').value='';document.getElementById('f-sqft').value='';
   document.getElementById('f-year').value='';document.getElementById('f-search').value='';
   document.getElementById('f-include-small').checked=false;
-  document.getElementById('legend-small-note').textContent='Showing 10,000+ sq ft buildings only';
+  document.getElementById('f-include-unknown').checked=false;
+  updateSizeNote();
   ['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k==='all'));
   syncImageryToYear('');render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
