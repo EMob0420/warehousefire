@@ -57,12 +57,11 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .size-tier-btn{padding:.28rem .65rem;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:.76rem;font-weight:600;cursor:pointer;font-family:'Space Mono',monospace;transition:all .15s}
 .size-tier-btn:hover{border-color:#ebe599;color:#ebe599}
 .size-tier-btn.active{background:#ebe599;color:#09090b;border-color:#ebe599}
-.size-compare-panel{display:none;border-top:1px solid var(--border);padding-top:.9rem;margin-top:.8rem}
-.size-compare-panel.open{display:flex;flex-direction:column;gap:1.25rem}
-.size-compare-ref{display:flex;flex-direction:column;gap:.85rem}
-.sc-icon{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;line-height:0;opacity:.9}
-.size-compare-ref strong{display:block;font-size:.82rem;color:#ebe599;margin-bottom:.3rem;font-family:'Space Mono',monospace}
-.size-compare-ref p{font-size:.88rem;color:var(--text2);line-height:1.65;margin:0}
+.size-compare-panel{display:none;border-top:1px solid var(--border);padding-top:1rem;margin-top:.8rem}
+.size-compare-panel.open{display:flex;flex-direction:column;gap:1.1rem}
+.sc-text strong{display:block;font-size:.82rem;color:#ebe599;margin-bottom:.3rem;font-family:'Space Mono',monospace}
+.sc-text p{font-size:.88rem;color:var(--text2);line-height:1.65;margin:0}
+.sc-icon{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;line-height:0;padding-top:1rem;border-top:1px solid var(--border)}
 .size-compare-count{text-align:left}
 .size-compare-count .sc-count-val{font-family:'Space Mono',monospace;font-size:2.25rem;font-weight:700;color:#ebe599;line-height:1}
 .size-compare-count .sc-count-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:.3rem}
@@ -457,13 +456,11 @@ footer a{color:#ebe599;text-decoration:none}
     <button class="size-tier-btn" data-tier="8">1M sq ft</button>
   </div>
   <div class="size-compare-panel" id="size-compare-panel">
-    <div class="size-compare-ref">
-      <div>
-        <strong id="sc-size-label"></strong>
-        <p id="sc-ref-text"></p>
-      </div>
-      <div class="sc-icon" id="sc-icon"></div>
+    <div class="sc-text">
+      <strong id="sc-size-label"></strong>
+      <p id="sc-ref-text"></p>
     </div>
+    <div class="sc-icon" id="sc-icon"></div>
     <div class="size-compare-count">
       <div class="sc-count-val" id="sc-count">—</div>
       <div class="sc-count-label">fires in current filter</div>
@@ -1025,8 +1022,8 @@ document.getElementById('btn-export').addEventListener('click',()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='warehouse_fires_export.csv';a.click()});
 
 // ============== SIZE COMPARISON TOOL ==============
-const _COURT='<svg width="120" height="64" viewBox="0 0 120 64" fill="none"><rect x="1" y="1" width="118" height="62" stroke="#ebe599" stroke-width="1.5" rx="1"/><line x1="60" y1="1" x2="60" y2="63" stroke="#ebe599" stroke-width="1" opacity=".7"/><circle cx="60" cy="32" r="8" stroke="#ebe599" stroke-width="1" opacity=".6"/><rect x="1" y="21" width="24" height="22" stroke="#ebe599" stroke-width="1" opacity=".6"/><rect x="95" y="21" width="24" height="22" stroke="#ebe599" stroke-width="1" opacity=".6"/><path d="M25 24 A8 8 0 0 1 25 40" stroke="#ebe599" stroke-width="1" opacity=".5"/><path d="M95 24 A8 8 0 0 0 95 40" stroke="#ebe599" stroke-width="1" opacity=".5"/><path d="M1.5 5 H21 A30 30 0 0 1 21 59 H1.5" stroke="#ebe599" stroke-width="1" opacity=".6"/><path d="M118.5 5 H99 A30 30 0 0 0 99 59 H118.5" stroke="#ebe599" stroke-width="1" opacity=".6"/></svg>';
-const _FIELD='<svg width="120" height="54" viewBox="0 0 120 54" fill="none"><rect x="1" y="1" width="118" height="52" stroke="#ebe599" stroke-width="1.5" rx="1"/><rect x="1" y="1" width="9" height="52" fill="#ebe599" fill-opacity=".1"/><rect x="110" y="1" width="9" height="52" fill="#ebe599" fill-opacity=".1"/><line x1="10" y1="1" x2="10" y2="53" stroke="#ebe599" stroke-width="1.5" opacity=".85"/><line x1="110" y1="1" x2="110" y2="53" stroke="#ebe599" stroke-width="1.5" opacity=".85"/><line x1="20" y1="1" x2="20" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="30" y1="1" x2="30" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="40" y1="1" x2="40" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="50" y1="1" x2="50" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="60" y1="1" x2="60" y2="53" stroke="#ebe599" stroke-width="1.25" opacity=".8"/><line x1="70" y1="1" x2="70" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="80" y1="1" x2="80" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="90" y1="1" x2="90" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="100" y1="1" x2="100" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="10" y1="18" x2="110" y2="18" stroke="#ebe599" stroke-width=".5" stroke-dasharray="3 7" stroke-dashoffset="7" opacity=".4"/><line x1="10" y1="36" x2="110" y2="36" stroke="#ebe599" stroke-width=".5" stroke-dasharray="3 7" stroke-dashoffset="7" opacity=".4"/></svg>';
+const _COURT='<svg width="150" height="80" viewBox="0 0 120 64" fill="none"><rect x="1" y="1" width="118" height="62" stroke="#ebe599" stroke-width="1.5" rx="1"/><line x1="60" y1="1" x2="60" y2="63" stroke="#ebe599" stroke-width="1" opacity=".7"/><circle cx="60" cy="32" r="8" stroke="#ebe599" stroke-width="1" opacity=".6"/><rect x="1" y="21" width="24" height="22" stroke="#ebe599" stroke-width="1" opacity=".6"/><rect x="95" y="21" width="24" height="22" stroke="#ebe599" stroke-width="1" opacity=".6"/><path d="M25 24 A8 8 0 0 1 25 40" stroke="#ebe599" stroke-width="1" opacity=".5"/><path d="M95 24 A8 8 0 0 0 95 40" stroke="#ebe599" stroke-width="1" opacity=".5"/><path d="M1.5 5 H21 A30 30 0 0 1 21 59 H1.5" stroke="#ebe599" stroke-width="1" opacity=".6"/><path d="M118.5 5 H99 A30 30 0 0 0 99 59 H118.5" stroke="#ebe599" stroke-width="1" opacity=".6"/></svg>';
+const _FIELD='<svg width="150" height="68" viewBox="0 0 120 54" fill="none"><rect x="1" y="1" width="118" height="52" stroke="#ebe599" stroke-width="1.5" rx="1"/><rect x="1" y="1" width="9" height="52" fill="#ebe599" fill-opacity=".1"/><rect x="110" y="1" width="9" height="52" fill="#ebe599" fill-opacity=".1"/><line x1="10" y1="1" x2="10" y2="53" stroke="#ebe599" stroke-width="1.5" opacity=".85"/><line x1="110" y1="1" x2="110" y2="53" stroke="#ebe599" stroke-width="1.5" opacity=".85"/><line x1="20" y1="1" x2="20" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="30" y1="1" x2="30" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="40" y1="1" x2="40" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="50" y1="1" x2="50" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="60" y1="1" x2="60" y2="53" stroke="#ebe599" stroke-width="1.25" opacity=".8"/><line x1="70" y1="1" x2="70" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="80" y1="1" x2="80" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="90" y1="1" x2="90" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="100" y1="1" x2="100" y2="53" stroke="#ebe599" stroke-width=".75" opacity=".5"/><line x1="10" y1="18" x2="110" y2="18" stroke="#ebe599" stroke-width=".5" stroke-dasharray="3 7" stroke-dashoffset="7" opacity=".4"/><line x1="10" y1="36" x2="110" y2="36" stroke="#ebe599" stroke-width=".5" stroke-dasharray="3 7" stroke-dashoffset="7" opacity=".4"/></svg>';
 const SIZE_TIERS=[
   {label:'5,000 sq ft',min:5000,max:10000,icon:_COURT,count:1,equiv:'About one basketball court (94×50 ft = 4,700 sq ft). At this scale a structure fire can cross the entire floor in minutes.'},
   {label:'10,000 sq ft',min:10000,max:25000,icon:_COURT,count:2,equiv:'About two basketball courts side by side — the minimum footprint used in this tool to classify a building as warehouse-scale.'},
