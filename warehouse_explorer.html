@@ -96,6 +96,10 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .legend-toggle{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.35rem}
 .legend-toggle-btn{padding:.2rem .5rem;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:.68rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
 .legend-toggle-btn.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
+.legend-small-filter{display:flex;flex-direction:column;gap:.3rem;margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)}
+.legend-small-filter label{display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--text2);cursor:pointer;user-select:none}
+.legend-small-filter input[type=checkbox]{accent-color:#ebe599;width:12px;height:12px;flex-shrink:0;cursor:pointer}
+.legend-small-note{font-size:.68rem;color:var(--text3);padding-left:1rem}
 #map{width:100%;height:100%;z-index:1}
 /* ── CHARTS ── */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
@@ -353,6 +357,14 @@ footer a{color:#ebe599;text-decoration:none}
           <button class="legend-toggle-btn" id="color-cause">Cause</button>
           <button class="legend-toggle-btn" id="color-county">County</button>
           <button class="legend-toggle-btn active" id="color-type">Type</button>
+        </div>
+
+        <div class="legend-small-filter">
+          <label>
+            <input type="checkbox" id="f-include-small">
+            Include small buildings (&lt;10K sq ft)
+          </label>
+          <span class="legend-small-note" id="legend-small-note">Showing 10,000+ sq ft buildings only</span>
         </div>
       </div>
     </div>
@@ -650,11 +662,12 @@ const cColors={'Los Angeles':'#f43f5e','San Bernardino':'#fb923c','Riverside':'#
 const cTag={'Los Angeles':'tag-la','San Bernardino':'tag-sb','Riverside':'tag-rv','Orange':'tag-oc'};
 
 // ============== STATE ==============
-const AppState={tab:'fires',nf:{county:'',type:'',year:'',search:'',sqft:'',btype:''},sort:{col:'dt',dir:-1}};
+const AppState={tab:'fires',nf:{county:'',type:'',year:'',search:'',sqft:'',btype:''},includeSmall:false,sort:{col:'dt',dir:-1}};
 function isWH(d){return d.sqft>=10000;}
 
 function filterData(){
   let d=NFIRS_DATA;const f=AppState.nf;
+  if(!AppState.includeSmall)d=d.filter(r=>r.sqft>=10000);
   if(f.county)d=d.filter(r=>r.co===f.county);
   if(f.type){
     if(f.type==='outside')d=d.filter(r=>['118','150','151','152','154','155','160','161','162'].includes(r.tc));
@@ -1009,10 +1022,13 @@ document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year
 document.getElementById('f-sqft').addEventListener('change',e=>{AppState.nf.sqft=e.target.value;render()});
 ['all','warehouse','building'].forEach(v=>{document.getElementById('f-btype-'+v).addEventListener('click',()=>{AppState.nf.btype=v==='all'?'':v;['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k===v));render();});});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
+document.getElementById('f-include-small').addEventListener('change',e=>{AppState.includeSmall=e.target.checked;document.getElementById('legend-small-note').textContent=e.target.checked?'Showing all building sizes':'Showing 10,000+ sq ft buildings only';render()});
 document.getElementById('btn-about').addEventListener('click',()=>{const p=document.getElementById('about-panel');const open=p.classList.toggle('open');document.getElementById('btn-about').textContent=open?'✕ Close':'? About this data';});
-document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',sqft:'',btype:''};
+document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',sqft:'',btype:''};AppState.includeSmall=false;
   document.getElementById('f-county').value='';document.getElementById('f-sqft').value='';
   document.getElementById('f-year').value='';document.getElementById('f-search').value='';
+  document.getElementById('f-include-small').checked=false;
+  document.getElementById('legend-small-note').textContent='Showing 10,000+ sq ft buildings only';
   ['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k==='all'));
   syncImageryToYear('');render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
