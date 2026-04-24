@@ -711,7 +711,7 @@ function filterData(){
 // ============== MAP ==============
 const map=L.map('map',{center:[33.95,-117.75],zoom:9,zoomControl:true});
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri, Maxar, GeoEye, USGS',maxZoom:19}).addTo(map);
 
 const heatCtrl=L.control({position:'bottomright'});
 heatCtrl.onAdd=function(){
@@ -778,10 +778,7 @@ function makeSpikeLayers(points){
   return[
     new deck.TileLayer({
       id:'basemap',
-      data:['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-            'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-            'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-            'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+      data:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       minZoom:0,maxZoom:19,tileSize:256,
       renderSubLayers:props=>{
         const{bbox:{west,south,east,north}}=props.tile;
