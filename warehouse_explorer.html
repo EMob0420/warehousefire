@@ -188,6 +188,9 @@ td{padding:.45rem .6rem;color:var(--text2)}
 .base-toggle-btn{background:rgba(9,9,11,.82);color:#a1a1aa;border:1px solid #3f3f46;border-radius:5px;padding:5px 10px;font-size:.78rem;font-family:'Space Mono',monospace;cursor:pointer;transition:all .15s;white-space:nowrap}
 .base-toggle-btn:hover{color:#fafafa;border-color:#71717a}
 .base-toggle-btn.active{background:rgba(235,229,153,.12);color:#ebe599;border-color:#ebe599}
+#spike-ctrl{position:absolute;top:10px;left:10px;z-index:20;display:flex;flex-direction:column;gap:4px;pointer-events:auto}
+.spike-btn{width:32px;height:32px;background:rgba(9,9,11,.85);color:#fafafa;border:1px solid #3f3f46;border-radius:4px;font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:'Space Mono',monospace;transition:background .12s,border-color .12s}
+.spike-btn:hover{background:#27272a;border-color:#71717a}
 footer{text-align:center;padding:1.5rem 0 1rem;color:var(--text3);font-size:.8rem;border-top:1px solid var(--border);margin-top:2rem}
 footer a{color:#ebe599;text-decoration:none}
 /* ── ABOUT TAB ── */
@@ -761,6 +764,7 @@ function makeIcon(size,loss,sqft,puc){
 const cluster=L.layerGroup();
 let mapView='markers';
 let deckInstance=null;
+let currentSpikeViewState={longitude:-117.5,latitude:34.0,zoom:7,pitch:50,bearing:0};
 
 function sqftSpikeHeight(sq){
   if(!sq||sq<=0)return 800;
@@ -774,6 +778,21 @@ function sqftSpikeHeight(sq){
   return 300;
 }
 
+function createConeMesh(segments){
+  const inv=1/Math.sqrt(2);
+  const pos=[],nrm=[],idx=[];
+  for(let i=0;i<segments;i++){
+    const a=(i/segments)*Math.PI*2,cx=Math.cos(a),cy=Math.sin(a);
+    pos.push(cx,cy,0);
+    nrm.push(cx*inv,cy*inv,inv);
+  }
+  pos.push(0,0,1);nrm.push(0,0,1);
+  const apex=segments;
+  for(let i=0;i<segments;i++)idx.push(i,(i+1)%segments,apex);
+  return{positions:new Float32Array(pos),normals:new Float32Array(nrm),indices:new Uint32Array(idx)};
+}
+const CONE_MESH=createConeMesh(6);
+
 function makeSpikeLayers(points){
   return[
     new deck.TileLayer({
@@ -785,19 +804,25 @@ function makeSpikeLayers(points){
         return new deck.BitmapLayer(props,{data:null,image:props.data,bounds:[west,south,east,north]});
       }
     }),
-    new deck.ColumnLayer({
+    new deck.ScatterplotLayer({
+      id:'spike-glow',
+      data:points,
+      getPosition:d=>d.pos,
+      getRadius:700,
+      radiusUnits:'meters',
+      getFillColor:[255,80,0,65],
+      stroked:false,
+      pickable:false
+    }),
+    new deck.SimpleMeshLayer({
       id:'spikes',
       data:points,
-      diskResolution:16,
-      radius:500,
-      extruded:true,
-      pickable:false,
+      mesh:CONE_MESH,
       getPosition:d=>d.pos,
-      getElevation:d=>d.h,
-      getFillColor:[255,50,50,217],
-      getLineColor:[255,120,50,230],
-      lineWidthMinPixels:1,
-      material:{ambient:0.4,diffuse:0.8,shininess:32,specularColor:[255,180,80]}
+      getScale:d=>[800,800,d.h],
+      getColor:[255,50,50,217],
+      pickable:false,
+      material:{ambient:0.5,diffuse:0.8,shininess:48,specularColor:[255,180,80]}
     })
   ];
 }
@@ -812,15 +837,28 @@ function buildSpikes(data){
     canvas.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%';
     container.innerHTML='';
     container.appendChild(canvas);
+    const ctrl=document.createElement('div');
+    ctrl.id='spike-ctrl';
+    ctrl.innerHTML='<button class="spike-btn" id="sp-zi" title="Zoom in">+</button><button class="spike-btn" id="sp-zo" title="Zoom out">−</button><button class="spike-btn" id="sp-pu" title="Tilt up">▲</button><button class="spike-btn" id="sp-pd" title="Tilt down">▼</button>';
+    container.appendChild(ctrl);
     deckInstance=new deck.Deck({
       canvas,
-      width:container.offsetWidth||700,
-      height:container.offsetHeight||600,
+      width:container.clientWidth||700,
+      height:container.clientHeight||600,
       views:new deck.MapView(),
-      initialViewState:{longitude:-117.5,latitude:34.0,zoom:7,pitch:50,bearing:0},
+      initialViewState:currentSpikeViewState,
       controller:true,
+      onViewStateChange:({viewState})=>{currentSpikeViewState=viewState;},
       layers:makeSpikeLayers(points)
     });
+    function setView(patch){
+      Object.assign(currentSpikeViewState,patch);
+      deckInstance.setProps({initialViewState:{...currentSpikeViewState,transitionDuration:300}});
+    }
+    document.getElementById('sp-zi').onclick=()=>setView({zoom:Math.min(currentSpikeViewState.zoom+1,16)});
+    document.getElementById('sp-zo').onclick=()=>setView({zoom:Math.max(currentSpikeViewState.zoom-1,4)});
+    document.getElementById('sp-pu').onclick=()=>setView({pitch:Math.min(currentSpikeViewState.pitch+10,80)});
+    document.getElementById('sp-pd').onclick=()=>setView({pitch:Math.max(currentSpikeViewState.pitch-10,0)});
   }
 }
 
