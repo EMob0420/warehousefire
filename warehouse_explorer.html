@@ -11,7 +11,6 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -822,30 +821,32 @@ function makeIcon(size,loss,sqft,puc){
 }
 const cluster=L.layerGroup();
 let mapView='markers';
-let heatLayer=null;
 
-function sqftWeight(sq){
-  if(!sq||sq<=0)return .15;
-  if(sq>=500000)return 1.0;
-  if(sq>=250000)return .85;
-  if(sq>=100000)return .70;
-  if(sq>=50000)return .50;
-  if(sq>=25000)return .35;
-  if(sq>=10000)return .20;
-  if(sq>=5000)return .10;
-  return .05;
+function sqftGlowRadius(sq){
+  if(!sq||sq<=0)return 8;
+  if(sq>=500000)return 40;
+  if(sq>=250000)return 32;
+  if(sq>=100000)return 25;
+  if(sq>=50000)return 18;
+  if(sq>=25000)return 14;
+  if(sq>=10000)return 10;
+  if(sq>=5000)return 6;
+  return 4;
 }
 
 function buildHeatmap(data){
   cluster.clearLayers();
-  if(heatLayer){map.removeLayer(heatLayer);heatLayer=null;}
-  const pts=data.map(d=>{const ll=getNfirsCoords(d);return[ll[0],ll[1],sqftWeight(d.sqft)];});
-  console.log('[heatmap] points:',pts.length,'sample:',pts[0]);
-  heatLayer=L.heatLayer(pts,{radius:25,blur:15,maxZoom:9,max:1.0,minOpacity:0.3,gradient:{0.0:'#ffe600',0.5:'#ff6a00',1.0:'#ef4444'}}).addTo(map);
+  data.forEach(d=>{
+    const ll=getNfirsCoords(d);const r=sqftGlowRadius(d.sqft);const size=r*2;
+    const icon=L.divIcon({className:'',iconSize:[size,size],iconAnchor:[r,r],
+      html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:radial-gradient(circle,rgba(239,68,68,.7) 0%,rgba(255,106,0,.45) 45%,transparent 100%);mix-blend-mode:screen;pointer-events:none"></div>`
+    });
+    cluster.addLayer(L.marker(ll,{icon}));
+  });
+  map.addLayer(cluster);
 }
 
 function buildMarkers(data){
-  if(heatLayer){map.removeLayer(heatLayer);heatLayer=null;}
   cluster.clearLayers();
   data.forEach(d=>{
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
