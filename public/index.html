@@ -162,6 +162,7 @@ footer a{color:var(--accent);text-decoration:none}
 .about-tab-section h2{font-size:1.375rem;font-weight:700;text-align:center;margin-bottom:1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .about-tab-section p{font-size:.92rem;color:var(--text2);line-height:1.75;margin-bottom:1.875rem}
 .about-tab-section p:last-child{margin-bottom:0}
+.about-tab-section .market-accordion-body p{margin-bottom:0}
 #ie-context-map{height:100%;width:100%}
 .ie-map-legend{display:flex;gap:1.25rem;justify-content:center;flex-wrap:wrap;margin:.75rem auto 0;max-width:750px;font-size:.72rem;color:var(--text3)}
 .ie-map-legend span{display:flex;align-items:center;gap:.35rem}
@@ -230,10 +231,49 @@ footer a{color:var(--accent);text-decoration:none}
   <hr style="border:none;border-top:1px solid var(--border);max-width:750px;margin:0 auto 2rem">
 
   <div class="about-tab-section">
-    <h2>Methods</h2>
-    <p>All fire incident data comes from FEMA's National Fire Incident Reporting System (NFIRS), a voluntary program that collects standardized fire reports from participating local fire departments. Records are filtered to California, then to the four-county Southern California region, and limited to structure fire incident types.</p>
-    <p>There are important limitations to keep in mind: NFIRS participation is voluntary, so not all departments report every year. Cause-of-ignition data is frequently incomplete or listed as "undetermined." Where NFIRS property use codes (PUC 891) are unavailable, this tool uses building square footage (≥10,000 sq ft) as a proxy to identify potential warehouse structures. Market data (vacancy rates, tenant information) comes from commercial real estate reports by JLL, CBRE, and others, reflecting conditions as of Q1 2026.</p>
-    <p>Marker size on the map reflects property loss in dollars — larger circles indicate greater reported losses. Color can be toggled between structure type, cause of ignition, or county using controls in the sidebar.</p>
+    <h2>About the Data</h2>
+    <p>This tool draws on two decades of FEMA's National Fire Incident Reporting System records. The sections below explain what NFIRS is, how this site uses it, its known limitations, and what its 2026 retirement means for future research.</p>
+
+    <details class="market-accordion">
+      <summary>What NFIRS is</summary>
+      <div class="market-accordion-body">
+        <p>The National Fire Incident Reporting System (NFIRS) is a voluntary reporting standard that fire departments use to uniformly report on the full range of their activities, from fire to emergency medical services to severe weather and natural disasters. Operated by FEMA's U.S. Fire Administration since 1975, it became the primary mechanism through which local fire departments reported what they responded to, what they found, and what was lost.</p>
+        <p>After responding to an incident, a fire department completes the appropriate NFIRS modules — each collecting a common set of information describing the nature of the call, the actions firefighters took, and end results including casualties and a property loss estimate.</p>
+        <p>Each record in the public data includes fields for incident type, property use, cause of ignition, heat source, contributing factors, property loss in dollars, and — where available — the address of the incident. The property use field records the actual use of the property where the incident occurred, not the overall configuration of the building or the broader complex it may be part of. This distinction matters: a fire in a warehouse within a larger industrial campus would be coded for the warehouse use specifically, not the campus.</p>
+        <p>NFIRS comprised roughly 75% of all reported fires occurring annually in the United States — the world's largest national database of fire incident information. As of February 2026, it was retired. NERIS, a modern cloud-based platform, is now the primary and only fire and all-hazards data system in the United States. The data powering this tool — covering 2005 through 2024 — represents the full available span of the NFIRS public record.</p>
+      </div>
+    </details>
+
+    <details class="market-accordion">
+      <summary>What this site uses it for</summary>
+      <div class="market-accordion-body">
+        <p>All fire incident data on this site comes from FEMA's NFIRS annual public data releases, filtered to California, then narrowed to the four-county Southern California region — Los Angeles, San Bernardino, Riverside, and Orange — and limited to structure fire incident type (code 111). From that filtered set, two categories of incidents are identified:</p>
+        <p><strong>Warehouse fires</strong> are incidents at properties classified under Property Use Code 891 (warehouse, non-refrigerated), or at commercial and industrial buildings of 10,000 square feet or more where a PUC is unavailable or ambiguous. The square footage threshold is a standard proxy used in fire and land use research to capture large-footprint storage and logistics facilities that may not be formally coded as warehouses in the NFIRS record.</p>
+        <p><strong>Building fires</strong> are all remaining structure fires at commercial and industrial properties in the dataset — smaller buildings, mixed-use facilities, and properties where the use code suggests something other than storage.</p>
+        <p>Marker size on the map reflects reported property loss in dollars. Color encodes structure type, cause of ignition, or county, depending on the filter selected.</p>
+      </div>
+    </details>
+
+    <details class="market-accordion">
+      <summary>Limitations to keep in mind</summary>
+      <div class="market-accordion-body">
+        <p>NFIRS is genuinely useful for understanding fire patterns at scale — but it has real gaps that anyone using this tool should understand.</p>
+        <p><strong>Participation is voluntary.</strong> NFIRS includes only those incidents reported by fire departments that participate, and data may vary depending on how frequently a department imports records into the system. A department that skipped a year of reporting, or that participated inconsistently, will leave a gap in the record that looks like fewer fires — not necessarily because there were fewer fires.</p>
+        <p><strong>Cause data is frequently incomplete.</strong> The cause-of-ignition field is one of the most consequential in any fire record, and one of the most commonly left blank or coded as "undetermined." Incidents with no cause data are shown on the map in a dimmed style and are excluded from cause-of-ignition charts. This reflects the underlying reality of the records, not a data cleaning decision.</p>
+        <p><strong>Property use codes vary by department.</strong> Whether a building gets coded as PUC 891 (warehouse) or something else depends on the judgment of the reporting officer, the practices of their department, and what information was available at the time of the incident. A large fulfillment center might be coded as a warehouse by one department and as general commercial by another. The square footage proxy helps catch some of these cases but cannot catch all of them.</p>
+        <p><strong>Property loss figures are estimates.</strong> Dollar amounts recorded in NFIRS are field estimates made at the time of the incident — not insurance settlements or official damage assessments. They should be read as order-of-magnitude indicators rather than precise figures.</p>
+        <p><strong>NFIRS does not separately track warehouse fires.</strong> There is no national definition of a "warehouse fire" in the NFIRS system. The combination of PUC 891 and the square footage proxy is this tool's best approximation, applied consistently across all four counties and all twenty years of data.</p>
+      </div>
+    </details>
+
+    <details class="market-accordion">
+      <summary>A note on NFIRS and its successor</summary>
+      <div class="market-accordion-body">
+        <p>NFIRS served as the nation's primary system for collecting fire incident data from 1975 until February 2026. While it provided valuable data for federal, state, and local agencies to identify trends, allocate resources, and improve fire safety practices, it became outdated and could no longer support the needs of the U.S. Fire Administration or the American fire service. It was built on aging code and struggled to keep pace with modern technology — one major limitation being its incompatibility with GIS mapping tools.</p>
+        <p>Its replacement, NERIS, launched in late 2024 and became the sole national reporting system in February 2026. This transition means the 2024 NFIRS data used here is the final year of a system that shaped how the country understood fire for five decades. Future research on this topic will need to draw on NERIS records — a different system with different fields, different codes, and a different architecture. Direct comparison across the transition will be methodologically complex.</p>
+        <p>This site's data ends at 2024 — the last complete year of the NFIRS record.</p>
+      </div>
+    </details>
   </div>
 
   <div class="about-tab-section">
