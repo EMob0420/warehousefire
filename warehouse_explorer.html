@@ -99,6 +99,11 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .size-filter{display:flex;flex-direction:column;gap:.28rem}
 .size-filter label{display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--text2);cursor:pointer;user-select:none}
 .size-filter input[type=checkbox]{accent-color:#ebe599;width:12px;height:12px;flex-shrink:0;cursor:pointer}
+.sb-collapsible-header{display:flex;align-items:center;width:100%;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;gap:.3rem}
+.sb-collapsible-header .sb-label{margin-bottom:0;flex-shrink:0}
+.sb-collapsible-summary{font-size:.68rem;color:var(--text3);margin-left:auto;padding-right:.2rem;white-space:nowrap}
+.sb-chevron{flex-shrink:0;color:var(--text3);transition:transform .18s}
+.sb-collapsible-header[aria-expanded="true"] .sb-chevron{transform:rotate(180deg)}
 #map{width:100%;height:100%;z-index:1}
 /* ── CHARTS ── */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
@@ -343,17 +348,23 @@ footer a{color:#ebe599;text-decoration:none}
 
     <!-- Building Size -->
     <div class="sb-section">
-      <span class="sb-label">Building Size</span>
-      <div class="size-filter">
-        <label><input type="checkbox" id="f-sz-500k" checked> 500K+ sq ft</label>
-        <label><input type="checkbox" id="f-sz-250k" checked> 250K–500K</label>
-        <label><input type="checkbox" id="f-sz-100k" checked> 100K–250K</label>
-        <label><input type="checkbox" id="f-sz-50k" checked> 50K–100K</label>
-        <label><input type="checkbox" id="f-sz-25k" checked> 25K–50K</label>
-        <label><input type="checkbox" id="f-sz-10k" checked> 10K–25K</label>
-        <label><input type="checkbox" id="f-sz-none" checked> No reported size</label>
-        <label><input type="checkbox" id="f-sz-5k"> 5K–10K</label>
-        <label><input type="checkbox" id="f-sz-sub5k"> Under 5K</label>
+      <button class="sb-collapsible-header" id="sz-toggle" aria-expanded="false">
+        <span class="sb-label">Building Size</span>
+        <span class="sb-collapsible-summary" id="sz-summary">10K+ sq ft</span>
+        <svg class="sb-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div id="sz-body" style="display:none;margin-top:.45rem">
+        <div class="size-filter">
+          <label><input type="checkbox" id="f-sz-500k" checked> 500K+ sq ft</label>
+          <label><input type="checkbox" id="f-sz-250k" checked> 250K–500K</label>
+          <label><input type="checkbox" id="f-sz-100k" checked> 100K–250K</label>
+          <label><input type="checkbox" id="f-sz-50k" checked> 50K–100K</label>
+          <label><input type="checkbox" id="f-sz-25k" checked> 25K–50K</label>
+          <label><input type="checkbox" id="f-sz-10k" checked> 10K–25K</label>
+          <label><input type="checkbox" id="f-sz-none" checked> No reported size</label>
+          <label><input type="checkbox" id="f-sz-5k"> 5K–10K</label>
+          <label><input type="checkbox" id="f-sz-sub5k"> Under 5K</label>
+        </div>
       </div>
     </div>
 
@@ -369,8 +380,14 @@ footer a{color:#ebe599;text-decoration:none}
 
     <!-- Year -->
     <div class="sb-section">
-      <label class="sb-label" for="f-year">Year</label>
-      <select id="f-year"><option value="">All Years</option><option>2002</option><option>2005</option><option>2006</option><option>2007</option><option>2008</option><option>2009</option><option>2010</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
+      <button class="sb-collapsible-header" id="yr-toggle" aria-expanded="false">
+        <span class="sb-label">Year</span>
+        <span class="sb-collapsible-summary" id="yr-summary">All years</span>
+        <svg class="sb-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div id="yr-body" style="display:none;margin-top:.45rem">
+        <select id="f-year"><option value="">All Years</option><option>2002</option><option>2005</option><option>2006</option><option>2007</option><option>2008</option><option>2009</option><option>2010</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
+      </div>
     </div>
 
     <hr class="sb-divider">
@@ -908,17 +925,22 @@ document.getElementById('btn-explore').addEventListener('click',()=>switchTab('f
 
 // ============== FILTERS ==============
 document.getElementById('f-county').addEventListener('change',e=>{AppState.nf.county=e.target.value;render()});
-document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year=e.target.value;syncImageryToYear(e.target.value);render()});
+document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year=e.target.value;syncImageryToYear(e.target.value);updateYearSummary();render()});
 ['all','warehouse','building'].forEach(v=>{document.getElementById('f-btype-'+v).addEventListener('click',()=>{AppState.nf.btype=v==='all'?'':v;['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k===v));render();});});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
 function updateLegend(){const show=AppState.sizeTiers['5k']||AppState.sizeTiers['sub5k'];document.getElementById('legend-small-item').style.display=show?'flex':'none';}
-Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).addEventListener('change',e=>{AppState.sizeTiers[k]=e.target.checked;updateLegend();render();});});
+function updateSzSummary(){const s=AppState.sizeTiers;let t;if(Object.values(s).every(Boolean))t='All sizes';else if(Object.values(s).every(v=>!v))t='None';else if(['500k','250k','100k','50k','25k','10k','none'].every(k=>s[k])&&!s['5k']&&!s['sub5k'])t='10K+ sq ft';else{const n=Object.values(s).filter(Boolean).length;t=n+' of 9';}document.getElementById('sz-summary').textContent=t;}
+function updateYearSummary(){document.getElementById('yr-summary').textContent=AppState.nf.year||'All years';}
+function initCollapsible(toggleId,bodyId){const tog=document.getElementById(toggleId),body=document.getElementById(bodyId);tog.addEventListener('click',()=>{const open=tog.getAttribute('aria-expanded')==='true';tog.setAttribute('aria-expanded',String(!open));body.style.display=open?'none':'block';});}
+initCollapsible('sz-toggle','sz-body');
+initCollapsible('yr-toggle','yr-body');
+Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).addEventListener('change',e=>{AppState.sizeTiers[k]=e.target.checked;updateLegend();updateSzSummary();render();});});
 document.getElementById('btn-about').addEventListener('click',()=>{const p=document.getElementById('about-panel');const open=p.classList.toggle('open');document.getElementById('btn-about').textContent=open?'✕ Close':'? About this data';});
 document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',btype:''};Object.assign(AppState.sizeTiers,SZ_DEFAULTS);
   document.getElementById('f-county').value='';
   document.getElementById('f-year').value='';document.getElementById('f-search').value='';
   Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).checked=SZ_DEFAULTS[k];});
-  updateLegend();
+  updateLegend();updateSzSummary();updateYearSummary();
   ['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k==='all'));
   syncImageryToYear('');render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
