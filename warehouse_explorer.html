@@ -48,9 +48,8 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .about-panel p{font-size:.86rem;color:var(--text3);line-height:1.65;margin:0 0 .5rem}
 .about-panel p:last-child{margin-bottom:0}
 /* stat pills in header */
-.intro-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem 1.1rem;margin-bottom:1.25rem}
-.intro-block .tab-intro{margin:0 0 0;max-width:none}
-.intro-block .stats-divider{margin:.9rem 0 .85rem}
+.stats-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.5rem 1rem;margin-bottom:1.25rem}
+.stats-footnote{font-size:.72rem;color:var(--text3);margin:.75rem 0 0;line-height:1.6;text-align:center}
 .stats{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;justify-content:center;width:100%}
 .stat{display:flex;flex-direction:column;gap:.05rem}
 .stat-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text3);font-weight:700}
@@ -291,11 +290,7 @@ footer a{color:#ebe599;text-decoration:none}
 <!-- TAB 2: FIRE EXPLORER -->
 <div class="tab-panel" id="tab-fires">
 
-<div class="intro-block">
-  <p class="tab-intro">This map plots 2,259 structure fires at commercial and industrial properties across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005 to 2024, drawn from FEMA's National Fire Incident Reporting System. Warehouse fires — identified by property use code or building footprint — are shown alongside other commercial building fires to make patterns of frequency, geography, and severity visible over two decades. Each marker's size reflects reported property loss; color encodes structure type, cause of ignition, or county depending on the filter selected. Use the sidebar to narrow by county, year, building size, or cause of ignition.</p>
-  <hr class="stats-divider">
-  <div class="stats" id="stats"></div>
-</div>
+<p class="tab-intro">This map plots 2,259 structure fires at commercial and industrial properties across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005 to 2024, drawn from FEMA's National Fire Incident Reporting System. Warehouse fires — identified by property use code or building footprint — are shown alongside other commercial building fires to make patterns of frequency, geography, and severity visible over two decades. Each marker's size reflects reported property loss; color encodes structure type, cause of ignition, or county depending on the filter selected. Use the sidebar to narrow by county, year, building size, or cause of ignition.</p>
 
 <!-- MAP ROW -->
 <div class="map-row">
@@ -410,6 +405,11 @@ footer a{color:#ebe599;text-decoration:none}
     </div>
 
   </div>
+</div>
+
+<div class="stats-block">
+  <div class="stats" id="stats"></div>
+  <p class="stats-footnote">* Property loss figures are field estimates recorded at the time of the incident — not insurance settlements or official assessments. Casualty counts come from voluntary fire department reporting through NFIRS; participation and data completeness vary by department. Both figures may be incomplete or underreported.</p>
 </div>
 
 <div id="panel-fires">
@@ -837,8 +837,8 @@ function renderStats(data){
   const wh=data.filter(isWH).length;const bld=data.filter(d=>!isWH(d)).length;
   add('Warehouse Fires',wh.toLocaleString(),'● sqft ≥ 10,000 / PUC 891');
   add('Building Fires',bld.toLocaleString(),'▪ all other structures');
-  add('Property Loss','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage');
-  add('Injuries / Deaths',inj+' / '+deaths,'reported casualties');
+  add('Property Loss *','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage');
+  add('Injuries / Deaths *',inj+' / '+deaths,'reported casualties');
   add('Cities',new Set(data.map(d=>d.ci)).size,'unique locations');
 }
 
