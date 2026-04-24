@@ -840,7 +840,7 @@ function buildHeatmap(data){
   cluster.clearLayers();
   if(heatLayer){map.removeLayer(heatLayer);heatLayer=null;}
   const pts=data.map(d=>{const ll=getNfirsCoords(d);return[ll[0],ll[1],sqftWeight(d.sqft)];});
-  heatLayer=L.heatLayer(pts,{radius:28,blur:22,maxZoom:14,gradient:{0.2:'#3b82f6',0.45:'#ffe600',0.7:'#ff6a00',1.0:'#ef4444'}}).addTo(map);
+  heatLayer=L.heatLayer(pts,{radius:15,blur:10,maxZoom:17,gradient:{0.2:'#3b82f6',0.45:'#ffe600',0.7:'#ff6a00',1.0:'#ef4444'}}).addTo(map);
 }
 
 function buildMarkers(data){
