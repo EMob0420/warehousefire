@@ -104,6 +104,8 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .sb-collapsible-summary{font-size:.68rem;color:var(--text3);margin-left:auto;padding-right:.2rem;white-space:nowrap}
 .sb-chevron{flex-shrink:0;color:var(--text3);transition:transform .18s}
 .sb-collapsible-header[aria-expanded="true"] .sb-chevron{transform:rotate(180deg)}
+.yr-toggle-all{background:none;border:none;color:var(--text3);font-size:.68rem;cursor:pointer;padding:0;font-family:inherit;text-decoration:underline;text-underline-offset:2px;display:block;margin-bottom:.3rem}
+.yr-toggle-all:hover{color:var(--text2)}
 #map{width:100%;height:100%;z-index:1}
 /* ── CHARTS ── */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
@@ -386,7 +388,29 @@ footer a{color:#ebe599;text-decoration:none}
         <svg class="sb-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div id="yr-body" style="display:none;margin-top:.45rem">
-        <select id="f-year"><option value="">All Years</option><option>2002</option><option>2005</option><option>2006</option><option>2007</option><option>2008</option><option>2009</option><option>2010</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
+        <button class="yr-toggle-all" id="yr-select-all">Deselect all</button>
+        <div class="size-filter">
+          <label><input type="checkbox" class="f-yr" value="2024" checked> 2024</label>
+          <label><input type="checkbox" class="f-yr" value="2023" checked> 2023</label>
+          <label><input type="checkbox" class="f-yr" value="2022" checked> 2022</label>
+          <label><input type="checkbox" class="f-yr" value="2021" checked> 2021</label>
+          <label><input type="checkbox" class="f-yr" value="2020" checked> 2020</label>
+          <label><input type="checkbox" class="f-yr" value="2019" checked> 2019</label>
+          <label><input type="checkbox" class="f-yr" value="2018" checked> 2018</label>
+          <label><input type="checkbox" class="f-yr" value="2017" checked> 2017</label>
+          <label><input type="checkbox" class="f-yr" value="2016" checked> 2016</label>
+          <label><input type="checkbox" class="f-yr" value="2015" checked> 2015</label>
+          <label><input type="checkbox" class="f-yr" value="2014" checked> 2014</label>
+          <label><input type="checkbox" class="f-yr" value="2013" checked> 2013</label>
+          <label><input type="checkbox" class="f-yr" value="2012" checked> 2012</label>
+          <label><input type="checkbox" class="f-yr" value="2010" checked> 2010</label>
+          <label><input type="checkbox" class="f-yr" value="2009" checked> 2009</label>
+          <label><input type="checkbox" class="f-yr" value="2008" checked> 2008</label>
+          <label><input type="checkbox" class="f-yr" value="2007" checked> 2007</label>
+          <label><input type="checkbox" class="f-yr" value="2006" checked> 2006</label>
+          <label><input type="checkbox" class="f-yr" value="2005" checked> 2005</label>
+          <label><input type="checkbox" class="f-yr" value="2002" checked> 2002</label>
+        </div>
       </div>
     </div>
 
@@ -660,7 +684,8 @@ const cTag={'Los Angeles':'tag-la','San Bernardino':'tag-sb','Riverside':'tag-rv
 
 // ============== STATE ==============
 const SZ_DEFAULTS={'500k':true,'250k':true,'100k':true,'50k':true,'25k':true,'10k':true,'none':true,'5k':false,'sub5k':false};
-const AppState={tab:'fires',nf:{county:'',type:'',year:'',search:'',btype:''},sizeTiers:Object.assign({},SZ_DEFAULTS),sort:{col:'dt',dir:-1}};
+const ALL_YEARS=[2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2010,2009,2008,2007,2006,2005,2002];
+const AppState={tab:'fires',nf:{county:'',type:'',search:'',btype:''},sizeTiers:Object.assign({},SZ_DEFAULTS),years:new Set(ALL_YEARS),sort:{col:'dt',dir:-1}};
 function isWH(d){return d.puc==='891';}
 
 function filterData(){
@@ -672,7 +697,7 @@ function filterData(){
     else if(f.type==='veg')d=d.filter(r=>['140','141','142','143'].includes(r.tc));
     else d=d.filter(r=>r.tc===f.type);
   }
-  if(f.year)d=d.filter(r=>r.yr===parseInt(f.year));
+  if(AppState.years.size<ALL_YEARS.length)d=d.filter(r=>AppState.years.has(r.yr));
   if(f.btype==='warehouse')d=d.filter(r=>isWH(r));
   else if(f.btype==='building')d=d.filter(r=>!isWH(r));
   if(f.search){const s=f.search.toUpperCase();d=d.filter(r=>(r.ci+' '+r.addr+' '+r.ty).toUpperCase().includes(s))}
@@ -925,22 +950,32 @@ document.getElementById('btn-explore').addEventListener('click',()=>switchTab('f
 
 // ============== FILTERS ==============
 document.getElementById('f-county').addEventListener('change',e=>{AppState.nf.county=e.target.value;render()});
-document.getElementById('f-year').addEventListener('change',e=>{AppState.nf.year=e.target.value;syncImageryToYear(e.target.value);updateYearSummary();render()});
 ['all','warehouse','building'].forEach(v=>{document.getElementById('f-btype-'+v).addEventListener('click',()=>{AppState.nf.btype=v==='all'?'':v;['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k===v));render();});});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
 function updateLegend(){const show=AppState.sizeTiers['5k']||AppState.sizeTiers['sub5k'];document.getElementById('legend-small-item').style.display=show?'flex':'none';}
 function updateSzSummary(){const s=AppState.sizeTiers;let t;if(Object.values(s).every(Boolean))t='All sizes';else if(Object.values(s).every(v=>!v))t='None';else if(['500k','250k','100k','50k','25k','10k','none'].every(k=>s[k])&&!s['5k']&&!s['sub5k'])t='10K+ sq ft';else{const n=Object.values(s).filter(Boolean).length;t=n+' of 9';}document.getElementById('sz-summary').textContent=t;}
-function updateYearSummary(){document.getElementById('yr-summary').textContent=AppState.nf.year||'All years';}
+function updateYearSummary(){
+  const sel=[...AppState.years].sort((a,b)=>a-b);
+  let t;
+  if(sel.length===0)t='No years';
+  else if(sel.length===ALL_YEARS.length)t='All years';
+  else if(sel.length===1)t=String(sel[0]);
+  else{const mn=sel[0],mx=sel[sel.length-1];const inRange=ALL_YEARS.filter(y=>y>=mn&&y<=mx);t=(inRange.length===sel.length)?mn+'–'+mx:sel.length+' years';}
+  document.getElementById('yr-summary').textContent=t;
+}
+function updateYrSelectAll(){document.getElementById('yr-select-all').textContent=AppState.years.size===ALL_YEARS.length?'Deselect all':'Select all';}
 function initCollapsible(toggleId,bodyId){const tog=document.getElementById(toggleId),body=document.getElementById(bodyId);tog.addEventListener('click',()=>{const open=tog.getAttribute('aria-expanded')==='true';tog.setAttribute('aria-expanded',String(!open));body.style.display=open?'none':'block';});}
 initCollapsible('sz-toggle','sz-body');
 initCollapsible('yr-toggle','yr-body');
 Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).addEventListener('change',e=>{AppState.sizeTiers[k]=e.target.checked;updateLegend();updateSzSummary();render();});});
+document.querySelectorAll('.f-yr').forEach(cb=>{cb.addEventListener('change',e=>{const y=parseInt(e.target.value);if(e.target.checked)AppState.years.add(y);else AppState.years.delete(y);updateYearSummary();updateYrSelectAll();render();});});
+document.getElementById('yr-select-all').addEventListener('click',()=>{const allOn=AppState.years.size===ALL_YEARS.length;document.querySelectorAll('.f-yr').forEach(cb=>{cb.checked=!allOn;const y=parseInt(cb.value);if(!allOn)AppState.years.add(y);else AppState.years.delete(y);});updateYearSummary();updateYrSelectAll();render();});
 document.getElementById('btn-about').addEventListener('click',()=>{const p=document.getElementById('about-panel');const open=p.classList.toggle('open');document.getElementById('btn-about').textContent=open?'✕ Close':'? About this data';});
-document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',year:'',search:'',btype:''};Object.assign(AppState.sizeTiers,SZ_DEFAULTS);
-  document.getElementById('f-county').value='';
-  document.getElementById('f-year').value='';document.getElementById('f-search').value='';
+document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',search:'',btype:''};Object.assign(AppState.sizeTiers,SZ_DEFAULTS);AppState.years=new Set(ALL_YEARS);
+  document.getElementById('f-county').value='';document.getElementById('f-search').value='';
   Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).checked=SZ_DEFAULTS[k];});
-  updateLegend();updateSzSummary();updateYearSummary();
+  document.querySelectorAll('.f-yr').forEach(cb=>{cb.checked=true;});
+  updateLegend();updateSzSummary();updateYearSummary();updateYrSelectAll();
   ['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k==='all'));
   syncImageryToYear('');render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
