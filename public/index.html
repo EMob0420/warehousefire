@@ -1007,18 +1007,19 @@ function initMarket(){
 render();setTimeout(()=>map.invalidateSize(),100);
 
 // ============== IE CONTEXT MAP ==============
-let ieMap=L.map('ie-context-map',{center:[33.93,-118.0],zoom:9,zoomControl:true,scrollWheelZoom:false,attributionControl:false});
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(ieMap);
-(function(){
+let ieMap=null;
+function _initIeMap(){
+  if(ieMap)return;
+  ieMap=L.map('ie-context-map',{center:[33.93,-118.0],zoom:9,zoomControl:true,scrollWheelZoom:false,attributionControl:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:''}).addTo(ieMap);
   function mkIcon(emoji,color){return L.divIcon({className:'',iconSize:[28,28],iconAnchor:[14,14],html:`<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1">${emoji}</div>`});}
   const apLayer=L.layerGroup();
   [['LAX — Los Angeles International',33.9425,-118.4081],['BUR — Hollywood Burbank Airport',34.2007,-118.3585],['LGB — Long Beach Airport',33.8177,-118.1516],['SNA — John Wayne Airport (Orange County)',33.6757,-117.8682],['ONT — Ontario International Airport',34.0560,-117.6009],['SBD — San Bernardino International Airport',34.0954,-117.2344]].forEach(([name,lat,lng])=>L.marker([lat,lng],{icon:mkIcon('✈','#991b1b')}).bindTooltip(name,{direction:'top',className:'ie-tip'}).addTo(apLayer));
   [['Port of Los Angeles',33.7361,-118.2922],['Port of Long Beach',33.7542,-118.2165]].forEach(([name,lat,lng])=>L.marker([lat,lng],{icon:mkIcon('⚓','#1d4ed8')}).bindTooltip(name,{direction:'top',className:'ie-tip'}).addTo(apLayer));
   apLayer.addTo(ieMap);
   L.control.layers(null,{'Airports & Ports':apLayer},{collapsed:false,position:'topright'}).addTo(ieMap);
-})();
-setTimeout(()=>ieMap.invalidateSize(),300);
-function _initIeMap(){setTimeout(()=>ieMap.invalidateSize(),100);}
+  setTimeout(()=>ieMap.invalidateSize(),100);
+}
 </script>
 </body>
 </html>
