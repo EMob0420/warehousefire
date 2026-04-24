@@ -839,20 +839,19 @@ function buildMarkers(data){
 // ============== STATS ==============
 function renderStats(data){
   const el=document.getElementById('stats');while(el.firstChild)el.removeChild(el.firstChild);
-  function add(l,v,s,c){const d=document.createElement('div');d.className='stat';
+  function add(l,v,c){const d=document.createElement('div');d.className='stat';
     const lb=document.createElement('div');lb.className='stat-label';lb.textContent=l;
     const vl=document.createElement('div');vl.className='stat-val';vl.textContent=v;if(c)vl.style.color=c;
-    const sb=document.createElement('div');sb.className='stat-sub';sb.textContent=s;
-    d.appendChild(lb);d.appendChild(vl);d.appendChild(sb);el.appendChild(d);
+    d.appendChild(lb);d.appendChild(vl);el.appendChild(d);
   }
   const loss=data.reduce((s,d)=>s+d.pl,0);
   const inj=data.reduce((s,d)=>s+d.ffi+d.cvi,0);const deaths=data.reduce((s,d)=>s+d.ffd+d.cvd,0);
   const wh=data.filter(isWH).length;const bld=data.filter(d=>!isWH(d)).length;
-  add('Warehouse Fires',wh.toLocaleString(),'● NFIRS Property Use Code 891');
-  add('Building Fires',bld.toLocaleString(),'▪ all other structures');
-  add('Property Loss *','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()),'reported damage');
-  add('Injuries / Deaths *',inj+' / '+deaths,'reported casualties');
-  add('Cities',new Set(data.map(d=>d.ci)).size,'unique locations');
+  add('Warehouse Fires',wh.toLocaleString());
+  add('Building Fires',bld.toLocaleString());
+  add('Property Loss *','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()));
+  add('Injuries / Deaths *',inj+' / '+deaths);
+  add('Cities',new Set(data.map(d=>d.ci)).size);
 }
 
 // ============== CHARTS ==============
