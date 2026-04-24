@@ -188,7 +188,6 @@ td{padding:.45rem .6rem;color:var(--text2)}
 .base-toggle-btn{background:rgba(9,9,11,.82);color:#a1a1aa;border:1px solid #3f3f46;border-radius:5px;padding:5px 10px;font-size:.78rem;font-family:'Space Mono',monospace;cursor:pointer;transition:all .15s;white-space:nowrap}
 .base-toggle-btn:hover{color:#fafafa;border-color:#71717a}
 .base-toggle-btn.active{background:rgba(235,229,153,.12);color:#ebe599;border-color:#ebe599}
-#img-info{position:absolute;bottom:28px;left:8px;z-index:800;background:rgba(9,9,11,.8);color:#71717a;padding:3px 8px;border-radius:4px;font-size:.7rem;font-family:'Space Mono',monospace;pointer-events:none;display:none}
 footer{text-align:center;padding:1.5rem 0 1rem;color:var(--text3);font-size:.8rem;border-top:1px solid var(--border);margin-top:2rem}
 footer a{color:#ebe599;text-decoration:none}
 /* ── ABOUT TAB ── */
@@ -334,7 +333,7 @@ footer a{color:#ebe599;text-decoration:none}
 <!-- MAP ROW -->
 <div class="map-row">
   <!-- MAP -->
-  <div class="map-wrap"><div id="map"></div><div id="deck-container"></div><div id="img-info"></div></div>
+  <div class="map-wrap"><div id="map"></div><div id="deck-container"></div></div>
 
   <!-- SIDEBAR -->
   <div class="map-sidebar">
@@ -712,27 +711,7 @@ function filterData(){
 // ============== MAP ==============
 const map=L.map('map',{center:[33.95,-117.75],zoom:9,zoomControl:true});
 
-const ESRI_CURRENT='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-const CARTO_DARK='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-const WAYBACK_BASE='https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile';
-
-let baseTile=L.tileLayer(ESRI_CURRENT,{attribution:'Esri, Maxar, GeoEye, USGS',maxZoom:19}).addTo(map);
-let usingSatellite=true;
-
-// Satellite / Dark toggle
-const toggleCtrl=L.control({position:'bottomright'});
-toggleCtrl.onAdd=function(){
-  const btn=document.createElement('button');
-  btn.id='base-toggle';btn.className='base-toggle-btn';btn.textContent='Dark mode';
-  L.DomEvent.on(btn,'click',function(e){
-    L.DomEvent.stopPropagation(e);
-    usingSatellite=!usingSatellite;
-    if(usingSatellite){btn.textContent='Dark mode';syncImageryToYear(AppState.nf.year);}
-    else{baseTile.setUrl(CARTO_DARK);document.getElementById('img-info').style.display='none';btn.textContent='Satellite';}
-  });
-  return btn;
-};
-toggleCtrl.addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
 
 const heatCtrl=L.control({position:'bottomright'});
 heatCtrl.onAdd=function(){
@@ -752,51 +731,6 @@ heatCtrl.onAdd=function(){
 };
 heatCtrl.addTo(map);
 
-// Esri Wayback: fetch available releases (historical imagery snapshots)
-let waybackReleases=[];
-fetch('https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml')
-  .then(r=>r.text()).then(text=>{
-    const xml=new DOMParser().parseFromString(text,'text/xml');
-    xml.querySelectorAll('Contents Layer').forEach(layer=>{
-      const title=layer.querySelector('Title')?.textContent||'';
-      const dateMatch=title.match(/(\d{4}-\d{2}-\d{2})/);
-      if(!dateMatch) return;
-      const dateStr=dateMatch[1];const year=parseInt(dateStr.slice(0,4));
-      const tmpl=layer.querySelector('ResourceURL')?.getAttribute('template')||'';
-      const idMatch=tmpl.match(/MapServer\/tile\/(\d+)\//);
-      if(!idMatch) return;
-      waybackReleases.push({releaseId:parseInt(idMatch[1]),year,dateStr});
-    });
-    waybackReleases.sort((a,b)=>b.releaseId-a.releaseId);
-    if(AppState.nf.year&&usingSatellite) syncImageryToYear(AppState.nf.year);
-  }).catch(()=>{});
-
-function getBestRelease(targetYear){
-  if(!waybackReleases.length) return null;
-  const same=waybackReleases.filter(r=>r.year===targetYear);
-  if(same.length) return same[0];
-  let best=null,bestDiff=Infinity;
-  waybackReleases.forEach(r=>{const d=Math.abs(r.year-targetYear);if(d<bestDiff){bestDiff=d;best=r;}});
-  return best;
-}
-
-function syncImageryToYear(year){
-  if(!usingSatellite) return;
-  const infoEl=document.getElementById('img-info');
-  if(!year){
-    baseTile.setUrl(ESRI_CURRENT);
-    if(infoEl){infoEl.textContent='';infoEl.style.display='none';}
-    return;
-  }
-  const release=getBestRelease(parseInt(year));
-  if(release){
-    baseTile.setUrl(WAYBACK_BASE+'/'+release.releaseId+'/{z}/{y}/{x}');
-    if(infoEl){infoEl.textContent='Imagery: ~'+release.dateStr;infoEl.style.display='block';}
-  } else {
-    baseTile.setUrl(ESRI_CURRENT);
-    if(infoEl){infoEl.textContent='';infoEl.style.display='none';}
-  }
-}
 
 
 // ============== NEWS DB ==============
@@ -917,8 +851,6 @@ function buildMarkers(data){
       pop.appendChild(pn);
     }
     m.bindPopup(pop);
-    m.on('popupopen',()=>syncImageryToYear(String(d.yr)));
-    m.on('popupclose',()=>{if(!AppState.nf.year)syncImageryToYear('');});
     cluster.addLayer(m);
   });
   map.addLayer(cluster);
@@ -1064,7 +996,7 @@ document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={
   document.querySelectorAll('.f-yr').forEach(cb=>{cb.checked=true;});
   updateLegend();updateSzSummary();updateYearSummary();updateYrSelectAll();
   ['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k==='all'));
-  syncImageryToYear('');render()});
+  render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
   const data=filterData();const hdr='date,city,county,type,address,zip,property_loss,contents_loss\n';
   const rows=data.map(d=>[d.dt,'"'+d.ci+'"',d.co,'"'+normType(d.tc)+'"','"'+d.addr+'"',d.zip,d.pl,d.cl].join(',')).join('\n');
