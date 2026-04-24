@@ -49,7 +49,7 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .about-panel p:last-child{margin-bottom:0}
 /* stat pills in header */
 .stats-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.5rem 1rem;margin-bottom:1.25rem}
-.size-compare-tool{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem}
+.size-compare-tool{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.5rem 2rem;margin-bottom:1.25rem}
 .size-compare-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.7rem}
 .size-compare-label{font-size:.78rem;font-weight:700;color:#ebe599;letter-spacing:-.01em}
 .size-compare-hint{font-size:.72rem;color:var(--text3)}
@@ -58,12 +58,12 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .size-tier-btn:hover{border-color:#ebe599;color:#ebe599}
 .size-tier-btn.active{background:#ebe599;color:#09090b;border-color:#ebe599}
 .size-compare-panel{display:none;border-top:1px solid var(--border);padding-top:.9rem;margin-top:.8rem}
-.size-compare-panel.open{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:start}
-.size-compare-ref{display:flex;gap:.85rem;align-items:flex-start}
-.sc-icon{flex-shrink:0;line-height:0;opacity:.9;margin-top:.1rem}
+.size-compare-panel.open{display:flex;flex-direction:column;gap:1.25rem}
+.size-compare-ref{display:flex;flex-direction:column;gap:.85rem}
+.sc-icon{line-height:0;opacity:.9}
 .size-compare-ref strong{display:block;font-size:.82rem;color:#ebe599;margin-bottom:.3rem;font-family:'Space Mono',monospace}
 .size-compare-ref p{font-size:.88rem;color:var(--text2);line-height:1.65;margin:0}
-.size-compare-count{text-align:right;flex-shrink:0}
+.size-compare-count{text-align:left}
 .size-compare-count .sc-count-val{font-family:'Space Mono',monospace;font-size:2.25rem;font-weight:700;color:#ebe599;line-height:1}
 .size-compare-count .sc-count-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:.3rem}
 .stats-footnote{font-size:.72rem;color:var(--text3);margin:.75rem 0 0;line-height:1.6;text-align:center}
@@ -458,11 +458,11 @@ footer a{color:#ebe599;text-decoration:none}
   </div>
   <div class="size-compare-panel" id="size-compare-panel">
     <div class="size-compare-ref">
-      <div class="sc-icon" id="sc-icon"></div>
       <div>
         <strong id="sc-size-label"></strong>
         <p id="sc-ref-text"></p>
       </div>
+      <div class="sc-icon" id="sc-icon"></div>
     </div>
     <div class="size-compare-count">
       <div class="sc-count-val" id="sc-count">—</div>
