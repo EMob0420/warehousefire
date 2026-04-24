@@ -49,6 +49,21 @@ header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
 .about-panel p:last-child{margin-bottom:0}
 /* stat pills in header */
 .stats-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.5rem 1rem;margin-bottom:1.25rem}
+.size-compare-tool{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem}
+.size-compare-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.7rem}
+.size-compare-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);font-weight:700}
+.size-compare-hint{font-size:.72rem;color:var(--text3)}
+.size-tier-btns{display:flex;flex-wrap:wrap;gap:.35rem}
+.size-tier-btn{padding:.28rem .65rem;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:.76rem;font-weight:600;cursor:pointer;font-family:'Space Mono',monospace;transition:all .15s}
+.size-tier-btn:hover{border-color:#ebe599;color:#ebe599}
+.size-tier-btn.active{background:#ebe599;color:#09090b;border-color:#ebe599}
+.size-compare-panel{display:none;border-top:1px solid var(--border);padding-top:.9rem;margin-top:.8rem}
+.size-compare-panel.open{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:start}
+.size-compare-ref strong{display:block;font-size:.82rem;color:#ebe599;margin-bottom:.3rem;font-family:'Space Mono',monospace}
+.size-compare-ref p{font-size:.88rem;color:var(--text2);line-height:1.65;margin:0}
+.size-compare-count{text-align:right;flex-shrink:0}
+.size-compare-count .sc-count-val{font-family:'Space Mono',monospace;font-size:2.25rem;font-weight:700;color:#ebe599;line-height:1}
+.size-compare-count .sc-count-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:.3rem}
 .stats-footnote{font-size:.72rem;color:var(--text3);margin:.75rem 0 0;line-height:1.6;text-align:center}
 .stats{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;justify-content:center;width:100%}
 .stat{display:flex;flex-direction:column;gap:.05rem}
@@ -421,6 +436,35 @@ footer a{color:#ebe599;text-decoration:none}
 </div>
 
 <div id="panel-fires">
+
+<!-- SIZE COMPARISON TOOL -->
+<div class="size-compare-tool">
+  <div class="size-compare-header">
+    <span class="size-compare-label">Building Size Reference</span>
+    <span class="size-compare-hint">Select a tier to see a comparison</span>
+  </div>
+  <div class="size-tier-btns">
+    <button class="size-tier-btn" data-tier="0">5K sq ft</button>
+    <button class="size-tier-btn" data-tier="1">10K sq ft</button>
+    <button class="size-tier-btn" data-tier="2">25K sq ft</button>
+    <button class="size-tier-btn" data-tier="3">50K sq ft</button>
+    <button class="size-tier-btn" data-tier="4">100K sq ft</button>
+    <button class="size-tier-btn" data-tier="5">250K sq ft</button>
+    <button class="size-tier-btn" data-tier="6">500K sq ft</button>
+    <button class="size-tier-btn" data-tier="7">700K sq ft</button>
+    <button class="size-tier-btn" data-tier="8">1M sq ft</button>
+  </div>
+  <div class="size-compare-panel" id="size-compare-panel">
+    <div class="size-compare-ref">
+      <strong id="sc-size-label"></strong>
+      <p id="sc-ref-text"></p>
+    </div>
+    <div class="size-compare-count">
+      <div class="sc-count-val" id="sc-count">—</div>
+      <div class="sc-count-label">fires in current filter</div>
+    </div>
+  </div>
+</div>
 
 <!-- CHARTS -->
 <div class="charts">
@@ -975,8 +1019,44 @@ document.getElementById('btn-export').addEventListener('click',()=>{
   const blob=new Blob([hdr+rows],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='warehouse_fires_export.csv';a.click()});
 
+// ============== SIZE COMPARISON TOOL ==============
+const SIZE_TIERS=[
+  {label:'5,000 sq ft',min:5000,max:10000,equiv:'About one basketball court (94×50 ft = 4,700 sq ft). At this scale a structure fire can cross the entire floor in minutes.'},
+  {label:'10,000 sq ft',min:10000,max:25000,equiv:'About two basketball courts side by side — the minimum footprint used in this tool to classify a building as warehouse-scale.'},
+  {label:'25,000 sq ft',min:25000,max:50000,equiv:'Roughly half a football field. Typical of light industrial or regional storage facilities.'},
+  {label:'50,000 sq ft',min:50000,max:100000,equiv:'Close to a full football field (57,600 sq ft including end zones). Common size for mid-scale warehouses and staging facilities.'},
+  {label:'100,000 sq ft',min:100000,max:250000,equiv:'About two football fields end to end — roughly the footprint of a city block. Typical of regional logistics centers.'},
+  {label:'250,000 sq ft',min:250000,max:500000,equiv:'Nearly five football fields. The scale of a major e-commerce fulfillment center serving a metro region.'},
+  {label:'500,000 sq ft',min:500000,max:700000,equiv:'About nine football fields — roughly 11 acres. Facilities at this scale typically employ hundreds to thousands of workers across multiple shifts.'},
+  {label:'700,000 sq ft',min:700000,max:1000000,equiv:'Around 12 football fields, or 16 acres. Among the largest distribution centers in North America.'},
+  {label:'1,000,000+ sq ft',min:1000000,max:Infinity,equiv:'More than 17 football fields — nearly 23 acres under one roof. The scale of the largest Amazon and Walmart fulfillment centers, visible as solid gray blocks in satellite imagery.'}
+];
+let _activeSizeTier=null,_lastData=[];
+function updateSizeCompare(data){
+  _lastData=data;
+  if(_activeSizeTier===null)return;
+  const t=SIZE_TIERS[_activeSizeTier];
+  document.getElementById('sc-count').textContent=data.filter(d=>d.sqft>=t.min&&d.sqft<t.max).length.toLocaleString();
+}
+document.querySelectorAll('.size-tier-btn').forEach((btn,i)=>{
+  btn.addEventListener('click',()=>{
+    const same=_activeSizeTier===i;
+    document.querySelectorAll('.size-tier-btn').forEach(b=>b.classList.remove('active'));
+    const panel=document.getElementById('size-compare-panel');
+    if(same){_activeSizeTier=null;panel.classList.remove('open');}
+    else{
+      _activeSizeTier=i;btn.classList.add('active');
+      const t=SIZE_TIERS[i];
+      document.getElementById('sc-size-label').textContent=t.label;
+      document.getElementById('sc-ref-text').textContent=t.equiv;
+      document.getElementById('sc-count').textContent=_lastData.filter(d=>d.sqft>=t.min&&d.sqft<t.max).length.toLocaleString();
+      panel.classList.add('open');
+    }
+  });
+});
+
 // ============== RENDER ==============
-function render(){const data=filterData();renderStats(data);if(AppState.tab==='fires'){updateCharts(data);renderTable(data);buildMarkers(data)}}
+function render(){const data=filterData();renderStats(data);updateSizeCompare(data);if(AppState.tab==='fires'){updateCharts(data);renderTable(data);buildMarkers(data)}}
 
 // ============== MARKET DATA ==============
 function initMarket(){
