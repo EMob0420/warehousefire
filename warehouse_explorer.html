@@ -1129,8 +1129,8 @@ document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={
   ['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k==='all'));
   render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
-  const data=filterData();const hdr='date,city,county,type,address,zip,property_loss,contents_loss\n';
-  const rows=data.map(d=>[d.dt,'"'+d.ci+'"',d.co,'"'+normType(d.tc)+'"','"'+d.addr+'"',d.zip,d.pl,d.cl].join(',')).join('\n');
+  const data=filterData();const hdr='date,city,county,type,address,zip,building_sqft,property_loss,contents_loss\n';
+  const rows=data.map(d=>[d.dt,'"'+d.ci+'"',d.co,'"'+normType(d.tc)+'"','"'+d.addr+'"',d.zip,(d.sqft>0?d.sqft:''),d.pl,d.cl].join(',')).join('\n');
   const blob=new Blob([hdr+rows],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='warehouse_fires_export.csv';a.click()});
 
