@@ -962,6 +962,7 @@ document.getElementById('view-sqft').addEventListener('click',()=>{mainChartView
 document.getElementById('view-year').addEventListener('click',()=>{mainChartView='year';document.getElementById('view-year').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-sqft').style.cssText='';document.getElementById('main-chart-title').textContent='Warehouse Fires by Year';document.getElementById('main-chart-sub').textContent='Annual building fire count by county (2005-2024)';render()});
 
 function updateCharts(data){
+  if(!charts.county) return;
   makeYearChart(mainChartView);
   if(mainChartView==='sqft'){
     const bins=['Under 5K','5K-10K','10K-25K','25K-50K','50K-100K','100K-250K','250K-500K','500K+','Unknown'];
