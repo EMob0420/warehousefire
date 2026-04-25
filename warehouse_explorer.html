@@ -984,7 +984,12 @@ function switchTab(tabId){
     setTimeout(()=>map.invalidateSize(),50);render();
   }
   if(tabId==='vacancy'&&!_marketInited){initMarket();_marketInited=true;}
-  if(tabId==='landscape'){_initIeMap();if(ieMap)[50,300].forEach(d=>setTimeout(()=>ieMap.invalidateSize(),d));}
+  if(tabId==='landscape'){
+    requestAnimationFrame(()=>{
+      _initIeMap();
+      [100,400].forEach(d=>setTimeout(()=>ieMap&&ieMap.invalidateSize(),d));
+    });
+  }
 }
 document.querySelectorAll('.tab-nav .tab-btn').forEach(btn=>{
   btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
@@ -1201,7 +1206,7 @@ function _initIeMap(){
       .addTo(ieMap);
   });
 
-  setTimeout(()=>ieMap.invalidateSize(),100);
+  requestAnimationFrame(()=>ieMap.invalidateSize());
 }
 </script>
 </body>
