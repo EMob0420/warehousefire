@@ -236,15 +236,15 @@ footer a{color:#ebe599;text-decoration:none}
 
 <!-- TAB NAV -->
 <nav class="tab-nav">
-  <button class="tab-btn active" data-tab="about">About</button>
-  <button class="tab-btn" data-tab="fires">Fire Explorer</button>
+  <button class="tab-btn active" data-tab="fires">Fire Explorer</button>
   <button class="tab-btn" data-tab="landscape">Warehouse Landscape</button>
   <button class="tab-btn" data-tab="vacancy">Warehouse Vacancy</button>
   <button class="tab-btn" data-tab="warehouses">WarehouseCITY</button>
+  <button class="tab-btn" data-tab="about">About</button>
 </nav>
 
 <!-- TAB 1: ABOUT -->
-<div class="tab-panel active" id="tab-about">
+<div class="tab-panel" id="tab-about">
 
   <div class="about-tab-section">
     <h2>Why This Matters</h2>
@@ -318,7 +318,7 @@ footer a{color:#ebe599;text-decoration:none}
 </div><!-- end tab-about -->
 
 <!-- TAB 2: FIRE EXPLORER -->
-<div class="tab-panel" id="tab-fires">
+<div class="tab-panel active" id="tab-fires">
 
 <div class="fires-section-header">
   <h2 class="fires-section-title">Where Fires Burn: Warehouse &amp; Building Incidents in Southern California</h2>
@@ -1260,7 +1260,7 @@ function initMarket(){
 }
 
 // ============== INIT ==============
-render();setTimeout(()=>map.invalidateSize(),100);
+switchTab('fires');
 
 </script>
 </body>
