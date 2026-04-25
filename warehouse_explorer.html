@@ -501,12 +501,30 @@ footer a{color:#ebe599;text-decoration:none}
 <div class="tab-panel" id="tab-landscape">
   <p class="tab-intro" style="max-width:800px;margin:0 auto 1.5rem">Southern California's logistics economy is anchored by two of the world's busiest seaports and a dense web of airports, freight rail lines, and interstate highways. The Inland Empire — San Bernardino and Riverside Counties — has absorbed much of the resulting warehouse growth, becoming a global distribution hub while raising persistent questions about fire risk, air quality, and community health.</p>
 
-  <div style="margin-bottom:2rem">
-    <div style="border-radius:8px;border:1px solid var(--border);overflow:hidden"><div id="ie-context-map" style="height:500px;width:100%"></div></div>
-    <div class="ie-map-legend">
-      <span><svg width="14" height="14" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="7" r="6" fill="#1d4ed8"/><text x="7" y="10.5" text-anchor="middle" font-size="9" fill="#fff">⚓</text></svg>Seaport</span>
-      <span><svg width="14" height="14" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="7" r="6" fill="#dc2626"/><text x="7" y="10.5" text-anchor="middle" font-size="9" fill="#fff">✈</text></svg>Airport</span>
-      <span><svg width="14" height="14" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="7" r="6" fill="#52525b"/><text x="7" y="10.5" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">R</text></svg>Rail Intermodal</span>
+  <div class="map-row" style="margin-bottom:2rem">
+    <div class="map-wrap" style="height:500px"><div id="ie-context-map" style="height:100%;width:100%"></div></div>
+    <div class="map-sidebar" style="height:500px">
+      <div class="sb-section">
+        <span class="sb-label">Layers</span>
+        <div class="size-filter" style="gap:.6rem">
+          <label style="align-items:flex-start;gap:.5rem">
+            <input type="checkbox" id="lyr-seaports" checked style="margin-top:.18rem;flex-shrink:0">
+            <span><span style="display:flex;align-items:center;gap:.35rem;margin-bottom:.18rem"><svg width="11" height="11" style="flex-shrink:0"><circle cx="5.5" cy="5.5" r="5" fill="#1d4ed8"/></svg><span style="color:var(--text);font-size:.76rem;font-weight:600">Seaports</span></span><span style="font-size:.66rem;color:var(--text3);line-height:1.4">Port of LA, Port of Long Beach</span></span>
+          </label>
+          <label style="align-items:flex-start;gap:.5rem">
+            <input type="checkbox" id="lyr-airports" checked style="margin-top:.18rem;flex-shrink:0">
+            <span><span style="display:flex;align-items:center;gap:.35rem;margin-bottom:.18rem"><svg width="11" height="11" style="flex-shrink:0"><circle cx="5.5" cy="5.5" r="5" fill="#dc2626"/></svg><span style="color:var(--text);font-size:.76rem;font-weight:600">Airports</span></span><span style="font-size:.66rem;color:var(--text3);line-height:1.4">LAX, ONT, SNA, LGB, SBD, March ARB</span></span>
+          </label>
+          <label style="align-items:flex-start;gap:.5rem">
+            <input type="checkbox" id="lyr-rail" checked style="margin-top:.18rem;flex-shrink:0">
+            <span><span style="display:flex;align-items:center;gap:.35rem;margin-bottom:.18rem"><svg width="11" height="11" style="flex-shrink:0"><circle cx="5.5" cy="5.5" r="5" fill="#52525b"/></svg><span style="color:var(--text);font-size:.76rem;font-weight:600">Rail Intermodal</span></span><span style="font-size:.66rem;color:var(--text3);line-height:1.4">BNSF San Bernardino, UP East LA, UP ICTF</span></span>
+          </label>
+          <label style="align-items:flex-start;gap:.5rem">
+            <input type="checkbox" id="lyr-roads" checked style="margin-top:.18rem;flex-shrink:0">
+            <span><span style="display:flex;align-items:center;gap:.35rem;margin-bottom:.18rem"><svg width="11" height="8" style="flex-shrink:0"><line x1="0" y1="4" x2="11" y2="4" stroke="#a1a1aa" stroke-width="2"/></svg><span style="color:var(--text);font-size:.76rem;font-weight:600">Road Labels</span></span><span style="font-size:.66rem;color:var(--text3);line-height:1.4">Highway shields and street names</span></span>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -989,11 +1007,22 @@ function switchTab(tabId){
     setTimeout(()=>{
       const lmap=L.map('ie-context-map').setView([33.85,-117.8],8);
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri, Maxar, GeoEye, USGS',maxZoom:19}).addTo(lmap);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png',{subdomains:'abcd',maxZoom:19,opacity:0.85,attribution:''}).addTo(lmap);
+      const roadsLayer=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png',{subdomains:'abcd',maxZoom:19,opacity:0.85,attribution:''});
+      roadsLayer.addTo(lmap);
       function mkLIcon(emoji,color){return L.divIcon({className:'',iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-16],html:`<div style="width:32px;height:32px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;box-shadow:0 2px 10px rgba(0,0,0,.65)">${emoji}</div>`});}
-      [['Port of Los Angeles',33.7395,-118.2673],['Port of Long Beach',33.7543,-118.2158]].forEach(([n,la,lo])=>L.marker([la,lo],{icon:mkLIcon('⚓','#1d4ed8')}).bindPopup(`<div class="popup-type">Seaport</div><div class="popup-title">${n}</div>`).addTo(lmap));
-      [['Los Angeles International (LAX)',33.9425,-118.4081],['Ontario International (ONT)',34.0560,-117.6012],['John Wayne / Orange County (SNA)',33.6757,-117.8678],['Long Beach Airport (LGB)',33.8177,-118.1516],['San Bernardino International (SBD)',34.0954,-117.2348],['March Air Reserve Base',33.8801,-117.2590]].forEach(([n,la,lo])=>L.marker([la,lo],{icon:mkLIcon('✈','#dc2626')}).bindPopup(`<div class="popup-type">Airport</div><div class="popup-title">${n}</div>`).addTo(lmap));
-      [['BNSF San Bernardino Intermodal',34.1083,-117.2946],['UP Los Angeles Transportation Center (East LA)',34.0141,-118.1670],['UP ICTF — Carson',33.8290,-118.2630]].forEach(([n,la,lo])=>L.marker([la,lo],{icon:mkLIcon('🚃','#3f3f46')}).bindPopup(`<div class="popup-type">Rail Intermodal</div><div class="popup-title">${n}</div>`).addTo(lmap));
+      const seaGroup=L.layerGroup();
+      [['Port of Los Angeles',33.7395,-118.2673],['Port of Long Beach',33.7543,-118.2158]].forEach(([n,la,lo])=>L.marker([la,lo],{icon:mkLIcon('⚓','#1d4ed8')}).bindPopup(`<div class="popup-type">Seaport</div><div class="popup-title">${n}</div>`).addTo(seaGroup));
+      seaGroup.addTo(lmap);
+      const airGroup=L.layerGroup();
+      [['Los Angeles International (LAX)',33.9425,-118.4081],['Ontario International (ONT)',34.0560,-117.6012],['John Wayne / Orange County (SNA)',33.6757,-117.8678],['Long Beach Airport (LGB)',33.8177,-118.1516],['San Bernardino International (SBD)',34.0954,-117.2348],['March Air Reserve Base',33.8801,-117.2590]].forEach(([n,la,lo])=>L.marker([la,lo],{icon:mkLIcon('✈','#dc2626')}).bindPopup(`<div class="popup-type">Airport</div><div class="popup-title">${n}</div>`).addTo(airGroup));
+      airGroup.addTo(lmap);
+      const railGroup=L.layerGroup();
+      [['BNSF San Bernardino Intermodal',34.1083,-117.2946],['UP Los Angeles Transportation Center (East LA)',34.0141,-118.1670],['UP ICTF — Carson',33.8290,-118.2630]].forEach(([n,la,lo])=>L.marker([la,lo],{icon:mkLIcon('🚃','#3f3f46')}).bindPopup(`<div class="popup-type">Rail Intermodal</div><div class="popup-title">${n}</div>`).addTo(railGroup));
+      railGroup.addTo(lmap);
+      document.getElementById('lyr-seaports').addEventListener('change',e=>{e.target.checked?seaGroup.addTo(lmap):lmap.removeLayer(seaGroup);});
+      document.getElementById('lyr-airports').addEventListener('change',e=>{e.target.checked?airGroup.addTo(lmap):lmap.removeLayer(airGroup);});
+      document.getElementById('lyr-rail').addEventListener('change',e=>{e.target.checked?railGroup.addTo(lmap):lmap.removeLayer(railGroup);});
+      document.getElementById('lyr-roads').addEventListener('change',e=>{e.target.checked?roadsLayer.addTo(lmap):lmap.removeLayer(roadsLayer);});
     },300);
   }
 }
