@@ -4,5 +4,6 @@ nfirs_downloads
 .claude
 *.csv
 *.json
+!public/*.json
 *.py
 warehouse_explorer.html
