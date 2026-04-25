@@ -434,6 +434,16 @@ footer a{color:#ebe599;text-decoration:none}
 
     <hr class="sb-divider">
 
+    <!-- Warehouse overlay -->
+    <div class="sb-section">
+      <label style="display:flex;align-items:flex-start;gap:.5rem;cursor:pointer">
+        <input type="checkbox" id="show-wh-polygons" style="margin-top:.18rem;flex-shrink:0">
+        <span style="font-size:.76rem;color:var(--text2);line-height:1.4">Show warehouse buildings</span>
+      </label>
+    </div>
+
+    <hr class="sb-divider">
+
     <!-- Actions -->
     <div class="sb-section" style="display:flex;gap:.4rem;flex-wrap:wrap">
       <button class="action-btn" id="btn-reset">Reset</button>
@@ -767,6 +777,25 @@ function filterData(){
 const map=L.map('map',{center:[33.95,-117.75],zoom:9,zoomControl:true});
 
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri, Maxar, GeoEye, USGS',maxZoom:19}).addTo(map);
+
+let whPolyLayer=null,whPolyLoaded=false;
+function setWhPolyLayer(visible){
+  if(visible&&!whPolyLoaded){
+    whPolyLoaded=true;
+    fetch('/warehouses_poly.json')
+      .then(r=>r.json())
+      .then(gj=>{
+        whPolyLayer=L.geoJSON(gj,{
+          style:{fillColor:'#f97316',fillOpacity:0.3,color:'#ea580c',weight:0.8,opacity:0.5}
+        }).addTo(map);
+        whPolyLayer.bringToBack();
+      })
+      .catch(e=>console.error('[WH polygons]',e));
+  } else if(whPolyLayer){
+    visible?whPolyLayer.addTo(map):map.removeLayer(whPolyLayer);
+  }
+}
+document.getElementById('show-wh-polygons').addEventListener('change',e=>setWhPolyLayer(e.target.checked));
 
 document.getElementById('spike-toggle').addEventListener('click',function(){
   mapView=mapView==='markers'?'spikes':'markers';
