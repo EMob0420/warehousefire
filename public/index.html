@@ -1059,24 +1059,30 @@ function switchTab(tabId){
       ].forEach(([n,la,lo,desc])=>L.marker([la,lo],{icon:mkLIcon('🚃','#52525b')}).bindPopup(mkPop('Rail Intermodal',n,desc)).addTo(railGroup));
       railGroup.addTo(lmap);
       const whGroup=L.layerGroup();
-      const catColor={'E':'#f97316','A':'#facc15','C':'#a78bfa'};
+      const catFill={'E':'#f59e0b','A':'#ef4444','C':'#6b7280'};
       const catLabel={'E':'Existing','A':'Approved','C':'CEQA Review'};
-      console.log('[Warehouses] fetching /warehouses.json...');
-      fetch('/warehouses.json')
+      console.log('[Warehouses] fetching /warehouses_poly.json...');
+      fetch('/warehouses_poly.json')
         .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-        .then(rows=>{
-          console.log('[Warehouses] loaded',rows.length,'features');
-          console.log('[Warehouses] first 3:',rows.slice(0,3).map(r=>[r[0],r[1],r[5]]));
-          rows.forEach(([lat,lon,sqft,cat,county,city])=>{
-            const sqftStr=sqft>=1000000?(sqft/1000000).toFixed(2)+'M sq ft':sqft>=1000?Math.round(sqft/1000)+'K sq ft':sqft+' sq ft';
-            L.circleMarker([lat,lon],{
-              radius:5,
-              fillColor:catColor[cat]||'#f97316',fillOpacity:0.75,
-              color:'#c2410c',weight:0.8
-            }).bindPopup(`<div class="popup-type">${catLabel[cat]||cat} Warehouse</div><div class="popup-title">${city||'Unknown'}${county?' · '+county:''}</div><div style="font-size:.78rem;color:var(--text2);margin-top:.3rem">${sqftStr}</div>`,{maxWidth:200}).addTo(whGroup);
-          });
+        .then(geojson=>{
+          console.log('[Warehouses] loaded',geojson.features.length,'polygons');
+          L.geoJSON(geojson,{
+            style:f=>({
+              fillColor:catFill[f.properties.cat]||'#f59e0b',
+              fillOpacity:0.5,
+              color:'#d97706',
+              weight:0.5,
+              opacity:0.6
+            }),
+            onEachFeature:(f,layer)=>{
+              const p=f.properties;
+              const cat=catLabel[p.cat]||p.cat;
+              const sqftStr=p.sqft>=1000000?(p.sqft/1000000).toFixed(2)+'M sq ft':p.sqft>=1000?Math.round(p.sqft/1000)+'K sq ft':p.sqft+' sq ft';
+              layer.bindPopup(`<div class="popup-type">${cat} Warehouse</div><div class="popup-title">${p.city||'Unknown'}</div><div style="font-size:.78rem;color:var(--text2);margin-top:.3rem">${sqftStr}</div>`,{maxWidth:200});
+            }
+          }).addTo(whGroup);
           whGroup.addTo(lmap);
-          console.log('[Warehouses] done — markers on map:',whGroup.getLayers().length);
+          console.log('[Warehouses] polygons on map');
         })
         .catch(err=>console.error('[Warehouses] fetch failed:',err));
       document.getElementById('lyr-warehouses').addEventListener('change',e=>{e.target.checked?whGroup.addTo(lmap):lmap.removeLayer(whGroup);});
