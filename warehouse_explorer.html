@@ -922,7 +922,7 @@ function buildMarkers(data){
     const pci=document.createElement('div');pci.className='popup-detail';pci.style.fontWeight='600';pci.textContent=toTitleCase(d.ci)+', '+d.co+' County';pop.appendChild(pci);
     const pd=document.createElement('div');pd.className='popup-detail';pd.textContent=d.dt+' | ZIP '+d.zip;pop.appendChild(pd);
     if(d.sqft>0){const psq=document.createElement('div');psq.className='popup-detail';psq.style.fontWeight='600';psq.style.color='#ebe599';psq.textContent=d.sqft.toLocaleString()+' sq ft'+(d.floors>0?' | '+d.floors+' stories':'');pop.appendChild(psq)}
-    if(d.cause){const pcause=document.createElement('div');pcause.className='popup-detail';pcause.textContent='Cause: '+d.cause+(d.heat&&d.heat!=='UU'?' | '+d.heat:'');if(d.cause==='Intentional (Arson)')pcause.style.color='#ef4444';pop.appendChild(pcause)}
+    if(d.cause){const pcause=document.createElement('div');pcause.className='popup-detail';pcause.textContent='Cause: '+d.cause+(d.heat&&d.heat!=='UU'?' | '+(HEAT_LABELS[d.heat]||d.heat):'');if(d.cause==='Intentional (Arson)')pcause.style.color='#ef4444';pop.appendChild(pcause)}
     const pl=document.createElement('div');pl.className='popup-loss';
     pl.textContent=d.pl>0?'Loss: $'+d.pl.toLocaleString():'No loss reported';
     if(d.pl<=0)pl.style.color='var(--text3)';pop.appendChild(pl);
@@ -969,6 +969,21 @@ function makeYearChart(mode){
 }
 let selectedCause=null;
 const _CAUSE_COLORS=['#ef4444','#fb923c','#facc15','#22d3ee','#a78bfa','#34d399','#f472b6'];
+const HEAT_LABELS={
+  '00':'Other','10':'Operating equipment','11':'Spark/ember from equipment',
+  '12':'Radiated heat from equipment','13':'Electrical arcing',
+  '40':'Hot/smoldering object','41':'Heat from flame/torch',
+  '42':'Radiated heat from open flame','43':'Radiated heat from equipment',
+  '50':'Heat from natural source','54':'Static discharge',
+  '56':'Spark/ember from equipment','60':'Chemical/spontaneous heat',
+  '61':'Cigarette','62':'Cigar/pipe','63':'Match/lighter','64':'Candle',
+  '65':'Spontaneous combustion','66':'Candle','68':'Fireworks',
+  '69':'Other smoking material','70':'Explosive/fireworks',
+  '71':'Flammable liquid','72':'Hot ember/ash','73':'Flammable material',
+  '74':'Flammable solid','80':'Heat spread from another fire',
+  '81':'Heat from direct flame','82':'Radiated heat','83':'Conducted heat',
+  '84':'Convected heat','97':'Multiple heat sources'
+};
 function _causeReset(){selectedCause=null;_applyCauseColors();_setHeatLabel();_updateHeatOnly(filterData());}
 function _applyCauseColors(){
   if(!charts.cause)return;
@@ -982,7 +997,7 @@ function _applyCauseColors(){
 function _updateHeatOnly(data){
   if(!charts.heat)return;
   const subset=selectedCause?data.filter(d=>d.cause===selectedCause):data;
-  const hc={};subset.forEach(d=>{if(d.heat&&d.heat!=='UU')hc[d.heat]=(hc[d.heat]||0)+1;});
+  const hc={};subset.forEach(d=>{if(!d.heat||d.heat==='UU')return;const hl=HEAT_LABELS[d.heat]||d.heat;hc[hl]=(hc[hl]||0)+1;});
   const top=Object.entries(hc).sort((a,b)=>b[1]-a[1]).slice(0,8);
   charts.heat.data.labels=top.map(h=>h[0]);
   charts.heat.data.datasets[0].data=top.map(h=>h[1]);
