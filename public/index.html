@@ -239,7 +239,6 @@ footer a{color:#ebe599;text-decoration:none}
   <button class="tab-btn active" data-tab="fires">Fire Explorer</button>
   <button class="tab-btn" data-tab="landscape">Warehouse Landscape</button>
   <button class="tab-btn" data-tab="vacancy">Warehouse Vacancy</button>
-  <button class="tab-btn" data-tab="warehouses">WarehouseCITY</button>
   <button class="tab-btn" data-tab="about">About</button>
 </nav>
 
@@ -632,51 +631,6 @@ footer a{color:#ebe599;text-decoration:none}
   </div><!-- end charts -->
 </div><!-- end tab-vacancy -->
 
-<!-- TAB 4: WAREHOUSE CITY -->
-<div class="tab-panel" id="tab-warehouses">
-
-  <div style="margin-bottom:.75rem">
-    <p style="font-size:.88rem;color:var(--text3);line-height:1.6">
-      <strong style="color:var(--text2)">WarehouseCITY</strong> — built by the Redford Conservancy at Pitzer College and Radical Research LLC — maps the warehouse footprint and environmental impact across Southern California. Filter by jurisdiction, legislative district, year built, and calculate diesel PM, NOx, CO2, and truck trip emissions.
-      <a href="https://radicalresearch.shinyapps.io/WarehouseCITY/" target="_blank" style="color:#ebe599;text-decoration:none;margin-left:.35rem">Open in new tab ↗</a>
-    </p>
-  </div>
-
-  <div id="warehousecity-wrap" style="position:relative;width:100%;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)">
-    <iframe
-      id="warehousecity-frame"
-      src="https://radicalresearch.shinyapps.io/WarehouseCITY/"
-      style="width:100%;height:780px;border:none;display:block"
-      loading="lazy"
-      title="WarehouseCITY — Redford Conservancy / Radical Research"
-    ></iframe>
-    <div id="warehousecity-blocked" style="display:none;padding:3rem 2rem;text-align:center">
-      <p style="color:var(--text2);font-size:.95rem;margin-bottom:1rem">This tool cannot be embedded directly — the WarehouseCITY server does not allow iframes.</p>
-      <a href="https://radicalresearch.shinyapps.io/WarehouseCITY/" target="_blank"
-         style="display:inline-block;padding:.65rem 1.5rem;background:var(--accent);color:white;border-radius:7px;font-weight:700;font-size:.95rem;text-decoration:none">
-        Open WarehouseCITY →
-      </a>
-    </div>
-  </div>
-
-</div><!-- end tab-warehouses -->
-
-<script>
-(function(){
-  var frame = document.getElementById('warehousecity-frame');
-  var blocked = document.getElementById('warehousecity-blocked');
-  frame.addEventListener('error', function(){ frame.style.display='none'; blocked.style.display='block'; });
-  // Detect blank/blocked iframe after load
-  frame.addEventListener('load', function(){
-    try {
-      var doc = frame.contentDocument || frame.contentWindow.document;
-      if (!doc || doc.body.innerHTML === '') { frame.style.display='none'; blocked.style.display='block'; }
-    } catch(e) {
-      // Cross-origin — can't inspect; assume it loaded
-    }
-  });
-})();
-</script>
 
 <footer style="padding:1.5rem 0 1rem;color:var(--text3);font-size:.75rem;border-top:1px solid var(--border);margin-top:1rem;line-height:1.7;max-width:860px">
   <strong style="color:var(--text2)">Data source:</strong> <a href="https://www.fema.gov/about/openfema/data-sets/fema-usfa-nfirs-annual-data" target="_blank" style="color:#ebe599;text-decoration:none">FEMA NFIRS Public Data</a> (USFA/FEMA) · Property Use Code 891 (Warehouse) + Incident Type 111 (Building Fire) · Storage yard and outside fires (INC 150–162) excluded · 2005–2024<br>
@@ -1313,8 +1267,6 @@ function initMarket(){
     ['CBRE OC Industrial Q4 2025','https://www.cbre.com/insights/figures/orange-county-industrial-figures-q4-2025'],
     ['The Real Deal - IE Vacancy 15-Year High','https://therealdeal.com/la/2025/08/07/industrial-sector-in-inland-empire-struggles-post-pandemic/'],
     ['About Amazon - SoCal Impact','https://www.aboutamazon.com/news/job-creation-and-investment/amazons-impact-in-southern-california'],
-    ['WarehouseCITY (Radical Research)','https://radicalresearch.shinyapps.io/WarehouseCITY/'],
-    ['WarehouseCITY GitHub','https://github.com/RadicalResearchLLC/WarehouseMap'],
     ['NFIRS Public Data (USFA/FEMA)','https://www.fema.gov/about/openfema/data-sets/fema-usfa-nfirs-annual-data'],
   ];
   const srcEl=document.getElementById('sources-list');
