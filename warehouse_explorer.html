@@ -24,17 +24,17 @@ html{font-size:18px}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans','Sora',system-ui,sans-serif;min-height:100vh}
 .container{max-width:1400px;margin:0 auto;padding:1.25rem 1.5rem}
 /* ── Site header ── */
-header{padding:0;border-bottom:none;margin-bottom:0;background:var(--bg)}
-.header-brand{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1.5rem 0 1.25rem}
-.header-brand img{height:90px;width:auto;border-radius:0;flex-shrink:0;object-fit:contain}
-.header-text{display:flex;flex-direction:column;gap:.2rem}
-.header-text h1{font-size:3rem;font-weight:900;line-height:1.1;color:#fafafa;letter-spacing:-.02em;margin:0;font-family:'Bodoni Moda','Playfair Display',serif;font-optical-sizing:auto;text-align:center}
+header{padding:0;border-bottom:1px solid #1c1c1f;margin-bottom:0;background:var(--bg)}
+.header-brand{display:flex;align-items:center;justify-content:flex-start;gap:.6rem;padding:.6rem 1.5rem;max-width:1400px;margin:0 auto}
+.header-brand img{height:38px;width:auto;flex-shrink:0;object-fit:contain}
+.header-text{display:flex;flex-direction:column;gap:.1rem}
+.header-text h1{font-size:1.55rem;font-weight:900;line-height:1;color:#fafafa;letter-spacing:-.02em;margin:0;font-family:'Bodoni Moda','Playfair Display',serif;font-optical-sizing:auto;text-align:left}
 .header-text h1 .fire{color:#E8441A}
 .header-text h1 .cream{color:#ebe599;display:inline-block;transform:scaleX(0.55);transform-origin:left}
 .header-subtitle{font-size:.73rem;color:var(--text3);font-weight:400;letter-spacing:.02em;margin:0}
-.header-divider{border:none;border-top:1px solid #1c1c1f;margin:0}
+.header-divider{display:none}
 /* ── Tab nav ── */
-.tab-nav{display:flex;gap:0;border-bottom:1px solid #1c1c1f;margin-bottom:1.5rem;overflow-x:auto;background:var(--bg)}
+.tab-nav{display:flex;justify-content:center;gap:0;border-bottom:1px solid #1c1c1f;margin-bottom:1.5rem;overflow-x:auto;background:var(--bg)}
 .tab-btn{padding:.75rem 1.2rem;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;color:var(--text3);font-size:.83rem;font-weight:600;cursor:pointer;font-family:'DM Sans',inherit;letter-spacing:.01em;transition:color .18s;white-space:nowrap;flex-shrink:0}
 .tab-btn:hover{color:#ebe599}
 .tab-btn.active{color:#ebe599;border-bottom-color:#ebe599}
