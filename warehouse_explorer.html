@@ -278,10 +278,8 @@ footer a{color:#ebe599;text-decoration:none}
     <details class="market-accordion">
       <summary>What this site uses it for</summary>
       <div class="market-accordion-body">
-        <p>All fire incident data on this site comes from FEMA's NFIRS annual public data releases, filtered to California, then narrowed to the four-county Southern California region — Los Angeles, San Bernardino, Riverside, and Orange — and limited to structure fire incident type (code 111). From that filtered set, two categories of incidents are identified:</p>
-        <p><strong>Warehouse fires</strong> are incidents at properties classified under NFIRS Property Use Code 891 (warehouse, non-refrigerated). All other commercial and industrial structure fires in the dataset are classified as building fires, regardless of square footage.</p>
-        <p><strong>Building fires</strong> are all remaining structure fires at commercial and industrial properties in the dataset — smaller buildings, mixed-use facilities, and properties where the use code suggests something other than storage.</p>
-        <p>Marker size on the map reflects reported property loss in dollars. Color encodes structure type, cause of ignition, or county, depending on the filter selected.</p>
+        <p>All fire incident data on this site comes from FEMA's NFIRS annual public data releases, filtered to California, then narrowed to the four-county Southern California region — Los Angeles, San Bernardino, Riverside, and Orange — and limited to structure fire incident type (code 111). The dataset includes incidents at commercial and industrial properties, with a focus on facilities where warehouse-scale storage activity has been documented. Property Use Code 891 (warehouse, non-refrigerated) identifies dedicated warehouse facilities within the dataset.</p>
+        <p>Marker size on the map reflects reported property loss in dollars.</p>
       </div>
     </details>
 
@@ -323,7 +321,7 @@ footer a{color:#ebe599;text-decoration:none}
   <h2 class="fires-section-title">SoCal Warehouse Fire Dashboard</h2>
   <p class="fires-section-sub">2005–2024</p>
 </div>
-<p class="tab-intro">This map plots 2,259 structure fires at commercial and industrial properties across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005 to 2024, drawn from FEMA's National Fire Incident Reporting System. Warehouse fires — identified by NFIRS Property Use Code 891 — are shown alongside other commercial building fires to make patterns of frequency, geography, and severity visible over two decades. Each marker's size reflects reported property loss; color encodes structure type, cause of ignition, or county depending on the filter selected. Use the sidebar to narrow by county, year, building size, or cause of ignition.</p>
+<p class="tab-intro">This map plots 2,259 structure fires at commercial and industrial properties across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005 to 2024, drawn from FEMA's National Fire Incident Reporting System. Each marker's size reflects reported property loss. Use the sidebar to narrow by county, year, building size, or cause of ignition.</p>
 
 <!-- MAP ROW -->
 <div class="map-row">
@@ -337,9 +335,7 @@ footer a{color:#ebe599;text-decoration:none}
     <div class="sb-section">
       <span class="sb-label">Legend</span>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#ff6a00"></div>Warehouse</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ffe600"></div>Building</div>
-        <div class="legend-item" id="legend-small-item" style="display:none"><div class="legend-dot" style="background:#4ade80"></div>Small building (&lt;10K sq ft)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff6a00"></div>Structure Fire</div>
         <div class="legend-item" id="legend-precise-item" style="display:none"><svg width="9" height="9" style="flex-shrink:0"><circle cx="4.5" cy="4.5" r="4" fill="#aaa" fill-opacity=".4" stroke="#fff" stroke-width="1.5"/></svg><span style="color:var(--text3)">Solid = street address</span></div>
         <div class="legend-item" id="legend-approx-item" style="display:none"><svg width="9" height="9" style="flex-shrink:0;opacity:0.45"><circle cx="4.5" cy="4.5" r="4" fill="#aaa" fill-opacity=".4" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3,2"/></svg><span style="color:var(--text3)">Dimmed = city-level approx.</span></div>
       </div>
@@ -415,18 +411,6 @@ footer a{color:#ebe599;text-decoration:none}
 
     <hr class="sb-divider">
 
-    <!-- Type -->
-    <div class="sb-section">
-      <span class="sb-label">Type</span>
-      <div style="display:flex;gap:.25rem;flex-wrap:wrap">
-        <button class="legend-toggle-btn active" id="f-btype-all">All</button>
-        <button class="legend-toggle-btn" id="f-btype-warehouse">Warehouses</button>
-        <button class="legend-toggle-btn" id="f-btype-building">Buildings</button>
-      </div>
-    </div>
-
-    <hr class="sb-divider">
-
     <!-- Search -->
     <div class="sb-section">
       <label class="sb-label" for="f-search">Search</label>
@@ -475,8 +459,7 @@ footer a{color:#ebe599;text-decoration:none}
     <!-- About -->
     <div class="sb-section">
       <div class="about-panel" id="about-panel" style="margin-bottom:.5rem">
-        <p>This tool maps structure fires reported to FEMA's National Fire Incident Reporting System (NFIRS) across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024. Use the filters to explore fires by county, year, building size, or cause. Marker size reflects property loss; color reflects structure type or cause depending on the selected mode.</p>
-        <p>Fires are categorized as <strong style="color:var(--text2)">Warehouse fires</strong> (NFIRS Property Use Code 891) or <strong style="color:var(--text2)">Building fires</strong> (all other commercial and industrial structures).</p>
+        <p>This tool maps structure fires reported to FEMA's National Fire Incident Reporting System (NFIRS) across Los Angeles, San Bernardino, Riverside, and Orange Counties from 2005–2024. Use the filters to explore fires by county, year, building size, or cause. Marker size reflects property loss.</p>
       </div>
       <button class="about-btn" id="btn-about" style="width:100%">? About this data</button>
     </div>
@@ -721,8 +704,7 @@ const cTag={'Los Angeles':'tag-la','San Bernardino':'tag-sb','Riverside':'tag-rv
 // ============== STATE ==============
 const SZ_DEFAULTS={'500k':true,'250k':true,'100k':true,'50k':true,'25k':true,'10k':true,'none':true,'5k':false,'sub5k':false};
 const ALL_YEARS=[2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2010,2009,2008,2007,2006,2005,2002];
-const AppState={tab:'fires',nf:{county:'',type:'',search:'',btype:''},sizeTiers:Object.assign({},SZ_DEFAULTS),years:new Set(ALL_YEARS),sort:{col:'dt',dir:-1}};
-function isWH(d){return d.puc==='891';}
+const AppState={tab:'fires',nf:{county:'',type:'',search:''},sizeTiers:Object.assign({},SZ_DEFAULTS),years:new Set(ALL_YEARS),sort:{col:'dt',dir:-1}};
 
 function filterData(){
   let d=NFIRS_DATA;const f=AppState.nf;const st=AppState.sizeTiers;
@@ -734,8 +716,6 @@ function filterData(){
     else d=d.filter(r=>r.tc===f.type);
   }
   if(AppState.years.size<ALL_YEARS.length)d=d.filter(r=>AppState.years.has(r.yr));
-  if(f.btype==='warehouse')d=d.filter(r=>isWH(r));
-  else if(f.btype==='building')d=d.filter(r=>!isWH(r));
   if(f.search){const s=f.search.toUpperCase();d=d.filter(r=>(r.ci+' '+r.addr+' '+r.ty).toUpperCase().includes(s))}
   const so=AppState.sort;
   d=[...d].sort((a,b)=>{const av=a[so.col],bv=b[so.col];return(av<bv?-1:av>bv?1:0)*so.dir});
@@ -795,15 +775,12 @@ const NEWS_DB={
 };
 
 function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(20,Math.max(6,4+Math.log10(pl)*4)))}
-function makeIcon(size,loss,sqft,puc){
-  const isWarehouse=puc==='891';
-  const isSmall=sqft>0&&sqft<10000;
-  const c=isWarehouse?'#ff6a00':isSmall?'#4ade80':'#ffe600';
-  const op=isWarehouse?(loss>100000?'.92':loss>10000?'.82':'.68'):(loss>100000?'.55':loss>10000?'.45':'.35');
-  const sw=isWarehouse?'0.8':'2';
+function makeIcon(size,loss){
+  const c='#ff6a00';
+  const op=loss>100000?'.92':loss>10000?'.82':'.68';
   const pad=3;const W=size+pad*2;const cx=W/2,cy=W/2;const r=size/2;
   const glow=loss>500000?`<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="${c}" fill-opacity=".15"/>`:'';
-  const shape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}"/>`;
+  const shape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" fill-opacity="${op}" stroke="#fff" stroke-width="0.8"/>`;
   return L.divIcon({className:'',iconSize:[W,W],iconAnchor:[cx,cy],
     html:`<svg width="${W}" height="${W}" style="overflow:visible">${glow}${shape}</svg>`
   });
@@ -812,10 +789,9 @@ const cluster=L.layerGroup();
 const clusterApprox=L.layerGroup();
 let mapView='markers';
 let showApprox=false;
-function makeApproxIcon(size,loss,sqft,puc){
-  const isWarehouse=puc==='891';const isSmall=sqft>0&&sqft<10000;
-  const c=isWarehouse?'#ff6a00':isSmall?'#4ade80':'#ffe600';
-  const op=isWarehouse?(loss>100000?'.92':loss>10000?'.82':'.68'):(loss>100000?'.55':loss>10000?'.45':'.35');
+function makeApproxIcon(size,loss){
+  const c='#ff6a00';
+  const op=loss>100000?'.92':loss>10000?'.82':'.68';
   const pad=3;const W=size+pad*2;const cx=W/2,cy=W/2;const r=size/2;
   const shape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" fill-opacity="${op}" stroke="#999" stroke-width="1.5" stroke-dasharray="3,2"/>`;
   return L.divIcon({className:'',iconSize:[W,W],iconAnchor:[cx,cy],
@@ -915,9 +891,8 @@ function buildMarkers(data){
   data.forEach(d=>{
     const isApprox=!d.lat||!d.lng;
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
-    const m=L.marker(ll,{icon:isApprox?makeApproxIcon(sz,d.pl,d.sqft,d.puc):makeIcon(sz,d.pl,d.sqft,d.puc),cityKey:d.ci,nfirsData:d});
+    const m=L.marker(ll,{icon:isApprox?makeApproxIcon(sz,d.pl):makeIcon(sz,d.pl),cityKey:d.ci,nfirsData:d});
     const pop=document.createElement('div');
-    const pt=document.createElement('div');pt.className='popup-type';pt.textContent=d.puc==='891'?'Warehouse (PUC 891)':normType(d.tc);pop.appendChild(pt);
     if(isApprox){const pa=document.createElement('div');pa.className='popup-detail';pa.style.cssText='color:var(--text3);font-style:italic;font-size:.72rem';pa.textContent='Approximate city-level location';pop.appendChild(pa);}
     const ptl=document.createElement('div');ptl.className='popup-title';ptl.textContent=d.addr||'(no address)';pop.appendChild(ptl);
     const pci=document.createElement('div');pci.className='popup-detail';pci.style.fontWeight='600';pci.textContent=toTitleCase(d.ci)+', '+d.co+' County';pop.appendChild(pci);
@@ -952,9 +927,7 @@ function renderStats(data){
   }
   const loss=data.reduce((s,d)=>s+d.pl,0);
   const inj=data.reduce((s,d)=>s+d.ffi+d.cvi,0);const deaths=data.reduce((s,d)=>s+d.ffd+d.cvd,0);
-  const wh=data.filter(isWH).length;const bld=data.filter(d=>!isWH(d)).length;
-  add('Warehouse Fires',wh.toLocaleString());
-  add('Building Fires',bld.toLocaleString());
+  add('Fires',data.length.toLocaleString());
   add('Property Loss *','$'+(loss>=1e6?(loss/1e6).toFixed(1)+'M':loss.toLocaleString()));
   add('Injuries / Deaths *',inj+' / '+deaths);
   add('Cities',new Set(data.map(d=>d.ci)).size);
@@ -1025,7 +998,7 @@ function initCharts(){
 }
 let mainChartView='sqft';
 document.getElementById('view-sqft').addEventListener('click',()=>{mainChartView='sqft';document.getElementById('view-sqft').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-year').style.cssText='';document.getElementById('main-chart-title').textContent='Cumulative Square Footage Burned';document.getElementById('main-chart-sub').textContent='Total building area affected by fire, by county';render()});
-document.getElementById('view-year').addEventListener('click',()=>{mainChartView='year';document.getElementById('view-year').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-sqft').style.cssText='';document.getElementById('main-chart-title').textContent='Warehouse Fires by Year';document.getElementById('main-chart-sub').textContent='Annual building fire count by county (2005-2024)';document.getElementById('sqft-note').textContent='';render()});
+document.getElementById('view-year').addEventListener('click',()=>{mainChartView='year';document.getElementById('view-year').style.cssText='background:var(--accent);color:white;border-color:var(--accent)';document.getElementById('view-sqft').style.cssText='';document.getElementById('main-chart-title').textContent='Fires by Year';document.getElementById('main-chart-sub').textContent='Annual building fire count by county (2005-2024)';document.getElementById('sqft-note').textContent='';render()});
 
 function updateCharts(data){
   if(!charts.county) return;
@@ -1057,7 +1030,7 @@ function updateCharts(data){
 function renderTable(data){
   const thead=document.getElementById('nfirs-thead');const tbody=document.getElementById('nfirs-tbody');
   if(!thead.firstChild){const tr=document.createElement('tr');
-    [['dt','Date'],['ci','City'],['co','County'],['puc','Type'],['addr','Address'],['sqft','Sq Ft'],['pl','Prop Loss'],['cl','Cont Loss']].forEach(([k,l])=>{
+    [['dt','Date'],['ci','City'],['co','County'],['addr','Address'],['sqft','Sq Ft'],['pl','Prop Loss'],['cl','Cont Loss']].forEach(([k,l])=>{
       const th=document.createElement('th');th.textContent=l;th.addEventListener('click',()=>{AppState.sort.dir=AppState.sort.col===k?AppState.sort.dir*-1:-1;AppState.sort.col=k;render()});tr.appendChild(th)});
     thead.appendChild(tr)}
   while(tbody.firstChild)tbody.removeChild(tbody.firstChild);
@@ -1066,7 +1039,6 @@ function renderTable(data){
     const t1=document.createElement('td');t1.textContent=d.dt;tr.appendChild(t1);
     const t3=document.createElement('td');t3.className='fire-name';t3.textContent=toTitleCase(d.ci);tr.appendChild(t3);
     const t4=document.createElement('td');const sp=document.createElement('span');sp.className='county-tag '+(cTag[d.co]||'');sp.textContent=d.co+' County';t4.appendChild(sp);tr.appendChild(t4);
-    const ttype=document.createElement('td');const spt=document.createElement('span');spt.className='county-tag '+(d.puc==='891'?'tag-wh':'tag-bld');spt.textContent=d.puc==='891'?'Warehouse':'Building Fire';ttype.appendChild(spt);tr.appendChild(ttype);
     const t5=document.createElement('td');t5.textContent=d.addr;tr.appendChild(t5);
     const tsq=document.createElement('td');tsq.style.fontFamily="'Space Mono',monospace";tsq.textContent=d.sqft>0?d.sqft.toLocaleString():'-';if(d.sqft<=0)tsq.style.color='var(--text3)';tr.appendChild(tsq);
     const t6=document.createElement('td');t6.className=d.pl>0?'loss':'loss-zero';t6.textContent=d.pl>0?'$'+d.pl.toLocaleString():'-';tr.appendChild(t6);
@@ -1160,9 +1132,8 @@ document.getElementById('btn-explore').addEventListener('click',()=>switchTab('f
 
 // ============== FILTERS ==============
 document.getElementById('f-county').addEventListener('change',e=>{AppState.nf.county=e.target.value;render()});
-['all','warehouse','building'].forEach(v=>{document.getElementById('f-btype-'+v).addEventListener('click',()=>{AppState.nf.btype=v==='all'?'':v;['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k===v));render();});});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
-function updateLegend(){const show=AppState.sizeTiers['5k']||AppState.sizeTiers['sub5k'];document.getElementById('legend-small-item').style.display=show?'flex':'none';}
+function updateLegend(){}
 function updateSzSummary(){const s=AppState.sizeTiers;let t;if(Object.values(s).every(Boolean))t='All sizes';else if(Object.values(s).every(v=>!v))t='None';else if(['500k','250k','100k','50k','25k','10k','none'].every(k=>s[k])&&!s['5k']&&!s['sub5k'])t='10K+ sq ft';else{const n=Object.values(s).filter(Boolean).length;t=n+' of 9';}document.getElementById('sz-summary').textContent=t;}
 function updateYearSummary(){
   const sel=[...AppState.years].sort((a,b)=>a-b);
@@ -1181,16 +1152,15 @@ Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).addEvent
 document.querySelectorAll('.f-yr').forEach(cb=>{cb.addEventListener('change',e=>{const y=parseInt(e.target.value);if(e.target.checked)AppState.years.add(y);else AppState.years.delete(y);updateYearSummary();updateYrSelectAll();render();});});
 document.getElementById('yr-select-all').addEventListener('click',()=>{const allOn=AppState.years.size===ALL_YEARS.length;document.querySelectorAll('.f-yr').forEach(cb=>{cb.checked=!allOn;const y=parseInt(cb.value);if(!allOn)AppState.years.add(y);else AppState.years.delete(y);});updateYearSummary();updateYrSelectAll();render();});
 document.getElementById('btn-about').addEventListener('click',()=>{const p=document.getElementById('about-panel');const open=p.classList.toggle('open');document.getElementById('btn-about').textContent=open?'✕ Close':'? About this data';});
-document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',search:'',btype:''};Object.assign(AppState.sizeTiers,SZ_DEFAULTS);AppState.years=new Set(ALL_YEARS);
+document.getElementById('btn-reset').addEventListener('click',()=>{AppState.nf={county:'',type:'',search:''};Object.assign(AppState.sizeTiers,SZ_DEFAULTS);AppState.years=new Set(ALL_YEARS);
   document.getElementById('f-county').value='';document.getElementById('f-search').value='';
   Object.keys(SZ_DEFAULTS).forEach(k=>{document.getElementById('f-sz-'+k).checked=SZ_DEFAULTS[k];});
   document.querySelectorAll('.f-yr').forEach(cb=>{cb.checked=true;});
-  updateLegend();updateSzSummary();updateYearSummary();updateYrSelectAll();
-  ['all','warehouse','building'].forEach(k=>document.getElementById('f-btype-'+k).classList.toggle('active',k==='all'));
+  updateSzSummary();updateYearSummary();updateYrSelectAll();
   render()});
 document.getElementById('btn-export').addEventListener('click',()=>{
-  const data=filterData();const hdr='date,city,county,type,address,zip,building_sqft,property_loss,contents_loss\n';
-  const rows=data.map(d=>[d.dt,'"'+d.ci+'"',d.co,'"'+normType(d.tc)+'"','"'+d.addr+'"',d.zip,(d.sqft>0?d.sqft:''),d.pl,d.cl].join(',')).join('\n');
+  const data=filterData();const hdr='date,city,county,address,zip,building_sqft,property_loss,contents_loss\n';
+  const rows=data.map(d=>[d.dt,'"'+d.ci+'"',d.co,'"'+d.addr+'"',d.zip,(d.sqft>0?d.sqft:''),d.pl,d.cl].join(',')).join('\n');
   const blob=new Blob([hdr+rows],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='warehouse_fires_export.csv';a.click()});
 
