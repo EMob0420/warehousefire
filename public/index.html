@@ -823,9 +823,9 @@ function makeSpikeLayers(points){
       id:'spike-glow',
       data:points,
       getPosition:d=>d.pos,
-      getRadius:350,
+      getRadius:140,
       radiusUnits:'meters',
-      getFillColor:[200,30,60,40],
+      getFillColor:[200,30,60,22],
       stroked:false,
       pickable:false
     }),
@@ -833,13 +833,13 @@ function makeSpikeLayers(points){
       id:'spikes',
       data:points,
       diskResolution:6,
-      radius:260,
+      radius:110,
       extruded:true,
       pickable:false,
       getPosition:d=>d.pos,
       getElevation:d=>d.h,
-      getFillColor:[200,30,60,115],
-      getLineColor:[200,30,60,130],
+      getFillColor:[200,30,60,90],
+      getLineColor:[200,30,60,90],
       lineWidthMinPixels:1,
       material:{ambient:0.6,diffuse:0.6,shininess:10,specularColor:[255,220,220]}
     })
