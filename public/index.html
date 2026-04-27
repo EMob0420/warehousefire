@@ -590,6 +590,7 @@ footer a{color:#ebe599;text-decoration:none}
 <!-- TAB 4: WAREHOUSE VACANCY -->
 <div class="tab-panel" id="tab-vacancy">
   <p class="tab-intro">Vacancy rates measure the share of available warehouse space not currently under lease — a key indicator of industrial market health. In Southern California's logistics corridor, vacancy trends reflect the same development pressures that influence building conditions, maintenance practices, and fire risk.</p>
+  <div id="vac-map" style="height:360px;border-radius:10px;overflow:hidden;margin-bottom:1rem;border:1px solid var(--border)"></div>
   <div class="charts" style="margin-bottom:1rem">
   <div id="panel-market">
     <div class="card full"><h2>Warehouse Vacancy Rates — Q1 2026</h2><div class="sub">Industrial vacancy by submarket. Sources: JLL, CBRE, Savills, Lee & Associates</div><div class="chart-wrap"><canvas id="ch-vacancy"></canvas></div></div>
@@ -1201,6 +1202,32 @@ function render(){const data=filterData();renderStats(data);updateSizeCompare(da
 
 // ============== MARKET DATA ==============
 function initMarket(){
+  // ── Vacancy submarket map ──
+  const VAC_MARKETS=[
+    {name:'IE West',label:'IE West',lat:34.065,lng:-117.610,rate:5.5,sqft:'~290M sq ft'},
+    {name:'IE East',label:'IE East',lat:34.055,lng:-117.155,rate:8.4,sqft:'~330M sq ft'},
+    {name:'LA – South Bay',label:'South Bay',lat:33.832,lng:-118.257,rate:6.1,sqft:null},
+    {name:'LA – Central',label:'LA Central',lat:33.993,lng:-118.148,rate:7.1,sqft:null},
+    {name:'Orange County',label:'Orange County',lat:33.768,lng:-117.868,rate:5.0,sqft:null},
+  ];
+  function vacColor(r){
+    const t=Math.min(1,Math.max(0,(r-3)/9));
+    const R=Math.round(74+(239-74)*t),G=Math.round(222+(68-222)*t),B=Math.round(128+(68-128)*t);
+    return`rgb(${R},${G},${B})`;
+  }
+  setTimeout(()=>{
+    const vm=L.map('vac-map',{zoomControl:true,scrollWheelZoom:false}).setView([33.92,-117.78],9);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',{subdomains:'abcd',maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(vm);
+    VAC_MARKETS.forEach(m=>{
+      const r=10+m.rate*3.2;
+      const c=vacColor(m.rate);
+      const circle=L.circleMarker([m.lat,m.lng],{radius:r,fillColor:c,color:'#fff',weight:1.5,fillOpacity:0.85}).addTo(vm);
+      const sqftLine=m.sqft?`<div style="font-size:.75rem;color:#a1a1aa;margin-top:.2rem">${m.sqft}</div>`:'';
+      circle.bindPopup(`<div style="font-family:'DM Sans',sans-serif;min-width:140px"><div style="font-weight:700;font-size:.85rem;color:#e4e4e7;margin-bottom:.25rem">${m.name}</div><div style="font-size:1.05rem;font-weight:700;color:${c}">${m.rate}%</div><div style="font-size:.72rem;color:#a1a1aa">Q1 2026 vacancy</div>${sqftLine}</div>`,{className:'cause-tooltip'});
+      const icon=L.divIcon({className:'',iconSize:[0,0],iconAnchor:[0,r+4],html:`<div style="font-size:.65rem;font-weight:700;color:#e4e4e7;white-space:nowrap;text-align:center;text-shadow:0 1px 3px #000;pointer-events:none">${m.label}<br>${m.rate}%</div>`});
+      L.marker([m.lat,m.lng],{icon,interactive:false}).addTo(vm);
+    });
+  },150);
   new Chart(document.getElementById('ch-vacancy'),{type:'bar',
     data:{labels:['IE West','IE East','Inland Empire\n(Overall)','LA South Bay','LA Central','LA County\n(Overall)','OC Airport','OC North','Orange County\n(Overall)'],
     datasets:[{label:'Vacancy %',data:[5.5,8.4,8.8,6.1,7.1,4.6,6.1,5.0,5.0],
