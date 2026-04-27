@@ -812,7 +812,7 @@ function makeSpikeLayers(points){
   return[
     new deck.TileLayer({
       id:'basemap',
-      data:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      data:'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
       minZoom:0,maxZoom:19,tileSize:256,
       renderSubLayers:props=>{
         const{bbox:{west,south,east,north}}=props.tile;
@@ -823,9 +823,9 @@ function makeSpikeLayers(points){
       id:'spike-glow',
       data:points,
       getPosition:d=>d.pos,
-      getRadius:700,
+      getRadius:350,
       radiusUnits:'meters',
-      getFillColor:[255,80,0,65],
+      getFillColor:[200,30,60,40],
       stroked:false,
       pickable:false
     }),
@@ -833,15 +833,15 @@ function makeSpikeLayers(points){
       id:'spikes',
       data:points,
       diskResolution:6,
-      radius:500,
+      radius:260,
       extruded:true,
       pickable:false,
       getPosition:d=>d.pos,
       getElevation:d=>d.h,
-      getFillColor:[255,50,50,217],
-      getLineColor:[255,120,50,230],
+      getFillColor:[200,30,60,115],
+      getLineColor:[200,30,60,130],
       lineWidthMinPixels:1,
-      material:{ambient:0.4,diffuse:0.8,shininess:32,specularColor:[255,180,80]}
+      material:{ambient:0.6,diffuse:0.6,shininess:10,specularColor:[255,220,220]}
     })
   ];
 }
