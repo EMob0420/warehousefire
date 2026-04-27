@@ -600,10 +600,6 @@ footer a{color:#ebe599;text-decoration:none}
       <div class="card" style="padding:1.25rem"><h2>Warehouse Vacancy Rates — Q1 2026</h2><div class="sub">Industrial vacancy by submarket. Sources: JLL, CBRE, Savills, Lee &amp; Associates</div><div class="chart-wrap" style="height:300px"><canvas id="ch-vacancy"></canvas></div></div>
       <div class="card" style="padding:1.25rem"><h2>Vacancy Trend (2020–2026)</h2><div class="sub">Quarterly vacancy rate. Source: JLL, CBRE, Cushman &amp; Wakefield</div><div class="chart-wrap" style="height:300px"><canvas id="ch-vac-trend"></canvas></div></div>
       <div class="card" style="padding:1.5rem">
-        <h2>Major Warehouse Tenants</h2><div class="sub">Key distribution center operators in the region</div>
-        <div class="table-wrap" style="max-height:360px"><table><thead><tr><th>Company</th><th>Facility</th><th>City</th><th>County</th><th>Details</th></tr></thead><tbody id="tenant-tbody"></tbody></table></div>
-      </div>
-      <div class="card" style="padding:1.5rem">
         <h2>Market Summary by Region</h2><div class="sub">Latest available industrial market data</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.75rem;margin-top:.75rem" id="market-cards"></div>
       </div>
@@ -1249,35 +1245,6 @@ function initMarket(){
       plugins:{legend:{position:'bottom',labels:{padding:12,usePointStyle:true,pointStyle:'circle',font:{size:10}}}},
       scales:{x:{grid:{display:false},ticks:{maxRotation:45,font:{size:8}}},y:{beginAtZero:true,max:12,ticks:{callback:v=>v+'%'}}}}});
 
-  const tenants=[
-    {co:'Amazon',fac:'ONT2/3/4/7 Fulfillment Centers',city:'San Bernardino',county:'San Bernardino',detail:'1910 & 2020 E Central Ave'},
-    {co:'Amazon',fac:'ONT9 Fulfillment Center',city:'Redlands',county:'San Bernardino',detail:'2125 W San Bernardino Ave'},
-    {co:'Amazon',fac:'ONT6/HLA3',city:'Moreno Valley',county:'Riverside',detail:'24208 San Michele Rd'},
-    {co:'Amazon',fac:'ONT8',city:'Moreno Valley',county:'Riverside',detail:'24300 Nandina Ave'},
-    {co:'Amazon',fac:'PSP1 Fulfillment Center',city:'Beaumont',county:'Riverside',detail:'1010 W Fourth St'},
-    {co:'Amazon',fac:'LGB6',city:'Riverside',county:'Riverside',detail:'20901 Krameria Ave'},
-    {co:'Amazon',fac:'World\'s Largest Warehouse',city:'Ontario',county:'San Bernardino',detail:'4.1M sq ft, 5-story (under construction)'},
-    {co:'Walmart',fac:'Fulfillment Center',city:'Colton',county:'San Bernardino',detail:'Distribution hub'},
-    {co:'Walmart',fac:'Refrigerated Distribution',city:'Riverside',county:'Riverside',detail:'Perishable goods DC'},
-    {co:'Target',fac:'Distribution Center',city:'Fontana',county:'San Bernardino',detail:'17450 Miller Ave'},
-    {co:'Target',fac:'Distribution Hub',city:'Riverside',county:'Riverside',detail:'1.9M sq ft near March ARB'},
-    {co:'Target',fac:'Warehouse',city:'Jurupa Valley',county:'Riverside',detail:'6186 Crusher Dr, 1.2M sq ft'},
-    {co:'Home Depot',fac:'Distribution Center',city:'Ontario',county:'San Bernardino',detail:'Eucalyptus & Euclid Ave'},
-    {co:'Home Depot',fac:'Distribution Facility',city:'Irwindale',county:'Los Angeles',detail:'13131 Los Angeles St, 530K sq ft'},
-    {co:'Home Depot',fac:'Distribution Center',city:'La Mirada',county:'Los Angeles',detail:'14659 Alondra Blvd'},
-    {co:'FedEx',fac:'Ground Hub',city:'Bloomington',county:'San Bernardino',detail:'330 Resource Dr, $27M expansion'},
-    {co:'FedEx',fac:'Ground Facility',city:'Ontario',county:'San Bernardino',detail:'3200 Inland Empire Blvd'},
-    {co:'UPS',fac:'Ontario Ground Hub',city:'Ontario',county:'San Bernardino',detail:'3140 E Jurupa St'},
-    {co:'UPS',fac:'Inland Empire Hub',city:'Riverside',county:'Riverside',detail:'20801 Krameria Ave'},
-  ];
-  const ttb=document.getElementById('tenant-tbody');
-  tenants.forEach(t=>{const tr=document.createElement('tr');
-    const t1=document.createElement('td');t1.className='fire-name';t1.textContent=t.co;tr.appendChild(t1);
-    const t2=document.createElement('td');t2.textContent=t.fac;tr.appendChild(t2);
-    const t3=document.createElement('td');t3.textContent=t.city;tr.appendChild(t3);
-    const t4=document.createElement('td');const sp=document.createElement('span');sp.className='county-tag '+(cTag[t.county]||'');sp.textContent=t.county;t4.appendChild(sp);tr.appendChild(t4);
-    const t5=document.createElement('td');t5.textContent=t.detail;t5.style.fontSize='.65rem';tr.appendChild(t5);
-    ttb.appendChild(tr)});
 
   const mkData=[
     {region:'Inland Empire',color:'#fb923c',vacancy:'8.8%',inventory:'619.8M sq ft',rent:'$0.95/SF NNN',absorption:'+2.8M SF (Q1 2026)',note:'Vacancy at 15-year high. 10-year avg is 4.0%. IE East weaker than IE West.'},
