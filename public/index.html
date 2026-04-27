@@ -589,26 +589,30 @@ footer a{color:#ebe599;text-decoration:none}
 
 <!-- TAB 4: WAREHOUSE VACANCY -->
 <div class="tab-panel" id="tab-vacancy">
-  <p class="tab-intro">Vacancy rates measure the share of available warehouse space not currently under lease — a key indicator of industrial market health. In Southern California's logistics corridor, vacancy trends reflect the same development pressures that influence building conditions, maintenance practices, and fire risk.</p>
-  <div id="vac-map" style="height:360px;border-radius:10px;overflow:hidden;margin-bottom:1rem;border:1px solid var(--border)"></div>
-  <div class="charts" style="margin-bottom:1rem">
-  <div id="panel-market">
-    <div class="card full"><h2>Warehouse Vacancy Rates — Q1 2026</h2><div class="sub">Industrial vacancy by submarket. Sources: JLL, CBRE, Savills, Lee & Associates</div><div class="chart-wrap"><canvas id="ch-vacancy"></canvas></div></div>
-    <div class="card full"><h2>Vacancy Trend (2020–2026)</h2><div class="sub">Quarterly vacancy rate. Source: JLL, CBRE, Cushman &amp; Wakefield</div><div class="chart-wrap"><canvas id="ch-vac-trend"></canvas></div></div>
-    <div class="card full" style="padding:1.5rem">
-      <h2>Major Warehouse Tenants</h2><div class="sub">Key distribution center operators in the region</div>
-      <div class="table-wrap" style="max-height:360px"><table><thead><tr><th>Company</th><th>Facility</th><th>City</th><th>County</th><th>Details</th></tr></thead><tbody id="tenant-tbody"></tbody></table></div>
+  <div style="max-width:960px;margin:0 auto">
+    <div style="display:flex;align-items:flex-start;gap:.65rem;background:rgba(39,39,42,.55);border:1px solid #3f3f46;border-radius:8px;padding:.75rem 1rem;margin-bottom:1.25rem;color:#a1a1aa;font-size:.82rem;line-height:1.6">
+      <svg style="flex-shrink:0;margin-top:.1rem" width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="#71717a" stroke-width="1.5"/><rect x="7.25" y="6.75" width="1.5" height="5.5" rx=".75" fill="#71717a"/><circle cx="8" cy="4.5" r=".85" fill="#71717a"/></svg>
+      <span>This section is under active development. Additional data sources, interactive maps, and deeper vacancy analysis are coming soon.</span>
     </div>
-    <div class="card full" style="padding:1.5rem">
-      <h2>Market Summary by Region</h2><div class="sub">Latest available industrial market data</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.75rem;margin-top:.75rem" id="market-cards"></div>
-    </div>
-    <div class="card full" style="padding:1.5rem">
-      <h2>Sources &amp; Citations</h2>
-      <div id="sources-list" style="font-size:.72rem;color:var(--text2);line-height:1.8;column-count:2;column-gap:2rem"></div>
-    </div>
-  </div><!-- end panel-market -->
-  </div><!-- end charts -->
+    <p class="tab-intro" style="max-width:none;margin-left:0;margin-right:0;margin-bottom:1.25rem">Vacancy rates measure the share of available warehouse space not currently under lease — a key indicator of industrial market health. In Southern California's logistics corridor, vacancy trends reflect the same development pressures that influence building conditions, maintenance practices, and fire risk.</p>
+    <div id="vac-map" style="height:360px;border-radius:10px;overflow:hidden;margin-bottom:1rem;border:1px solid var(--border)"></div>
+    <div id="panel-market" style="display:flex;flex-direction:column;gap:.75rem">
+      <div class="card" style="padding:1.25rem"><h2>Warehouse Vacancy Rates — Q1 2026</h2><div class="sub">Industrial vacancy by submarket. Sources: JLL, CBRE, Savills, Lee &amp; Associates</div><div class="chart-wrap" style="height:300px"><canvas id="ch-vacancy"></canvas></div></div>
+      <div class="card" style="padding:1.25rem"><h2>Vacancy Trend (2020–2026)</h2><div class="sub">Quarterly vacancy rate. Source: JLL, CBRE, Cushman &amp; Wakefield</div><div class="chart-wrap" style="height:300px"><canvas id="ch-vac-trend"></canvas></div></div>
+      <div class="card" style="padding:1.5rem">
+        <h2>Major Warehouse Tenants</h2><div class="sub">Key distribution center operators in the region</div>
+        <div class="table-wrap" style="max-height:360px"><table><thead><tr><th>Company</th><th>Facility</th><th>City</th><th>County</th><th>Details</th></tr></thead><tbody id="tenant-tbody"></tbody></table></div>
+      </div>
+      <div class="card" style="padding:1.5rem">
+        <h2>Market Summary by Region</h2><div class="sub">Latest available industrial market data</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.75rem;margin-top:.75rem" id="market-cards"></div>
+      </div>
+      <div class="card" style="padding:1.5rem">
+        <h2>Sources &amp; Citations</h2>
+        <div id="sources-list" style="font-size:.72rem;color:var(--text2);line-height:1.8;column-count:2;column-gap:2rem"></div>
+      </div>
+    </div><!-- end panel-market -->
+  </div>
 </div><!-- end tab-vacancy -->
 
 
