@@ -336,6 +336,7 @@ footer a{color:#ebe599;text-decoration:none}
       <span class="sb-label">Legend</span>
       <div class="legend">
         <div class="legend-item"><div class="legend-dot" style="background:#ff6a00"></div>Structure Fire</div>
+        <div class="legend-item" id="legend-small-item" style="display:none"><div class="legend-dot" style="background:#4ade80"></div>Small building (&lt;10K sq ft)</div>
         <div class="legend-item" id="legend-precise-item" style="display:none"><svg width="9" height="9" style="flex-shrink:0"><circle cx="4.5" cy="4.5" r="4" fill="#aaa" fill-opacity=".4" stroke="#fff" stroke-width="1.5"/></svg><span style="color:var(--text3)">Solid = street address</span></div>
         <div class="legend-item" id="legend-approx-item" style="display:none"><svg width="9" height="9" style="flex-shrink:0;opacity:0.45"><circle cx="4.5" cy="4.5" r="4" fill="#aaa" fill-opacity=".4" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3,2"/></svg><span style="color:var(--text3)">Dimmed = city-level approx.</span></div>
       </div>
@@ -775,8 +776,8 @@ const NEWS_DB={
 };
 
 function lossToSize(pl){if(!pl||pl<=0)return 8;return Math.round(Math.min(20,Math.max(6,4+Math.log10(pl)*4)))}
-function makeIcon(size,loss){
-  const c='#ff6a00';
+function makeIcon(size,loss,sqft){
+  const c=(sqft>0&&sqft<10000)?'#4ade80':'#ff6a00';
   const op=loss>100000?'.92':loss>10000?'.82':'.68';
   const pad=3;const W=size+pad*2;const cx=W/2,cy=W/2;const r=size/2;
   const glow=loss>500000?`<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="${c}" fill-opacity=".15"/>`:'';
@@ -789,8 +790,8 @@ const cluster=L.layerGroup();
 const clusterApprox=L.layerGroup();
 let mapView='markers';
 let showApprox=false;
-function makeApproxIcon(size,loss){
-  const c='#ff6a00';
+function makeApproxIcon(size,loss,sqft){
+  const c=(sqft>0&&sqft<10000)?'#4ade80':'#ff6a00';
   const op=loss>100000?'.92':loss>10000?'.82':'.68';
   const pad=3;const W=size+pad*2;const cx=W/2,cy=W/2;const r=size/2;
   const shape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" fill-opacity="${op}" stroke="#999" stroke-width="1.5" stroke-dasharray="3,2"/>`;
@@ -891,7 +892,7 @@ function buildMarkers(data){
   data.forEach(d=>{
     const isApprox=!d.lat||!d.lng;
     const ll=getNfirsCoords(d);const sz=lossToSize(d.pl);
-    const m=L.marker(ll,{icon:isApprox?makeApproxIcon(sz,d.pl):makeIcon(sz,d.pl),cityKey:d.ci,nfirsData:d});
+    const m=L.marker(ll,{icon:isApprox?makeApproxIcon(sz,d.pl,d.sqft):makeIcon(sz,d.pl,d.sqft),cityKey:d.ci,nfirsData:d});
     const pop=document.createElement('div');
     if(isApprox){const pa=document.createElement('div');pa.className='popup-detail';pa.style.cssText='color:var(--text3);font-style:italic;font-size:.72rem';pa.textContent='Approximate city-level location';pop.appendChild(pa);}
     const ptl=document.createElement('div');ptl.className='popup-title';ptl.textContent=d.addr||'(no address)';pop.appendChild(ptl);
@@ -1133,7 +1134,7 @@ document.getElementById('btn-explore').addEventListener('click',()=>switchTab('f
 // ============== FILTERS ==============
 document.getElementById('f-county').addEventListener('change',e=>{AppState.nf.county=e.target.value;render()});
 let st;document.getElementById('f-search').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{AppState.nf.search=e.target.value;render()},200)});
-function updateLegend(){}
+function updateLegend(){const show=AppState.sizeTiers['5k']||AppState.sizeTiers['sub5k'];document.getElementById('legend-small-item').style.display=show?'flex':'none';}
 function updateSzSummary(){const s=AppState.sizeTiers;let t;if(Object.values(s).every(Boolean))t='All sizes';else if(Object.values(s).every(v=>!v))t='None';else if(['500k','250k','100k','50k','25k','10k','none'].every(k=>s[k])&&!s['5k']&&!s['sub5k'])t='10K+ sq ft';else{const n=Object.values(s).filter(Boolean).length;t=n+' of 9';}document.getElementById('sz-summary').textContent=t;}
 function updateYearSummary(){
   const sel=[...AppState.years].sort((a,b)=>a-b);
