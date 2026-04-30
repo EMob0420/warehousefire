@@ -436,7 +436,7 @@ footer a{color:#ebe599;text-decoration:none}
     <div class="sb-section">
       <label style="display:flex;align-items:flex-start;gap:.5rem;cursor:pointer">
         <input type="checkbox" id="show-wh-polygons" style="margin-top:.18rem;flex-shrink:0">
-        <span style="font-size:.76rem;color:var(--text2);line-height:1.4">Show current warehouses</span>
+        <span style="display:flex;align-items:center;gap:.35rem;font-size:.76rem;color:var(--text2);line-height:1.4"><span style="width:10px;height:10px;border-radius:2px;background:#00d9ff;opacity:.85;flex-shrink:0;display:inline-block"></span>Show current warehouses</span>
       </label>
     </div>
 
@@ -763,7 +763,7 @@ function setWhPolyLayer(visible){
       .then(r=>r.json())
       .then(gj=>{
         whPolyLayer=L.geoJSON(gj,{
-          style:{fillColor:'#f97316',fillOpacity:0.3,color:'#ea580c',weight:0.8,opacity:0.5}
+          style:{fillColor:'#00d9ff',fillOpacity:0.4,color:'#00d9ff',weight:1.5,opacity:0.9}
         }).addTo(map);
         whPolyLayer.bringToBack();
       })
