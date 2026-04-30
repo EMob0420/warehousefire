@@ -330,17 +330,13 @@ footer a{color:#ebe599;text-decoration:none}
   <!-- MAP -->
   <div class="map-wrap"><div id="map"></div><div id="deck-container"></div><button id="spike-toggle" class="base-toggle-btn">3D Spikes</button>
   <div id="ces-legend">
-    <div class="ces-title">CES 4.0 Percentile</div>
-    <div class="ces-row"><div class="ces-sw" style="background:#c8312e"></div>90–100 (highest burden)</div>
-    <div class="ces-row"><div class="ces-sw" style="background:#f06b3e"></div>80–90</div>
-    <div class="ces-row"><div class="ces-sw" style="background:#ff9f4d"></div>70–80</div>
-    <div class="ces-row"><div class="ces-sw" style="background:#ffd97d"></div>60–70</div>
-    <div class="ces-row"><div class="ces-sw" style="background:#fff5b3"></div>50–60</div>
-    <div class="ces-row"><div class="ces-sw" style="background:#d9e88c"></div>40–50</div>
-    <div class="ces-row"><div class="ces-sw" style="background:#b3d56e"></div>30–40</div>
-    <div class="ces-row"><div class="ces-sw" style="background:#8cbf52"></div>20–30</div>
-    <div class="ces-row"><div class="ces-sw" style="background:#6ba03e"></div>10–20</div>
-    <div class="ces-row"><div class="ces-sw" style="background:#4a7c2a"></div>0–10 (lowest burden)</div>
+    <div class="ces-title">Env. Burden (CES 4.0)</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#8b1a1a;opacity:.9"></div>90–100th pct</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#d04428;opacity:.85"></div>80–90th</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#f08a3e;opacity:.75"></div>70–80th</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#fdb863;opacity:.65"></div>60–70th</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#ffe9a8;opacity:.55"></div>50–60th</div>
+    <div class="ces-row" style="color:#52525b;margin-top:.2rem">below 50th — hidden</div>
   </div>
   </div>
 
@@ -450,6 +446,12 @@ footer a{color:#ebe599;text-decoration:none}
         <input type="checkbox" id="show-ces" style="margin-top:.18rem;flex-shrink:0">
         <span style="font-size:.76rem;color:var(--text2);line-height:1.4">Show environmental burden (CES 4.0)</span>
       </label>
+      <div style="margin-top:.35rem;margin-left:1.35rem">
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer">
+          <input type="checkbox" id="ces-top-only" style="flex-shrink:0">
+          <span style="font-size:.71rem;color:var(--text3);line-height:1.4">Top quartile only (≥75th pct)</span>
+        </label>
+      </div>
     </div>
 
     <hr class="sb-divider">
@@ -773,12 +775,32 @@ function setWhPolyLayer(visible){
 document.getElementById('show-wh-polygons').addEventListener('change',e=>setWhPolyLayer(e.target.checked));
 
 // ── CalEnviroScreen 4.0 layer ──
+const CES_TIERS=[
+  {min:90,color:'#8b1a1a',op:.65},
+  {min:80,color:'#d04428',op:.55},
+  {min:70,color:'#f08a3e',op:.45},
+  {min:60,color:'#fdb863',op:.35},
+  {min:50,color:'#ffe9a8',op:.25},
+];
 function cesColor(p){
-  if(p===null||p===undefined)return'#555';
-  const c=['#4a7c2a','#6ba03e','#8cbf52','#b3d56e','#d9e88c','#fff5b3','#ffd97d','#ff9f4d','#f06b3e','#c8312e'];
-  return c[Math.min(9,Math.floor(p/10))];
+  if(p===null||p===undefined)return'#a1a1aa';
+  const t=CES_TIERS.find(t=>p>=t.min);
+  return t?t.color:'#a1a1aa';
 }
-let cesLayer=null,cesLoaded=false;
+function cesOpacity(p,topOnly){
+  if(p===null||p===undefined||p<50)return 0;
+  if(topOnly&&p<75)return 0;
+  const t=CES_TIERS.find(t=>p>=t.min);
+  return t?t.op:0;
+}
+let cesLayer=null,cesLoaded=false,cesTopOnly=false;
+function refreshCESStyle(){
+  if(!cesLayer)return;
+  cesLayer.setStyle(f=>{
+    const p=f.properties.CIscoreP;
+    return{fillColor:cesColor(p),fillOpacity:cesOpacity(p,cesTopOnly),color:'#000',weight:.15,opacity:.2};
+  });
+}
 function setCESLayer(on){
   if(on&&!cesLoaded){
     cesLoaded=true;
@@ -789,7 +811,7 @@ function setCESLayer(on){
           pane:'cesPane',
           style:f=>{
             const p=f.properties.CIscoreP;
-            return{fillColor:cesColor(p),fillOpacity:p!=null?.55:0,color:'#000',weight:0.2,opacity:0.35};
+            return{fillColor:cesColor(p),fillOpacity:cesOpacity(p,cesTopOnly),color:'#000',weight:.15,opacity:.2};
           },
           onEachFeature:(f,layer)=>{
             const p=f.properties;
@@ -816,6 +838,7 @@ function setCESLayer(on){
   document.getElementById('ces-legend').style.display=on?'block':'none';
 }
 document.getElementById('show-ces').addEventListener('change',e=>setCESLayer(e.target.checked));
+document.getElementById('ces-top-only').addEventListener('change',e=>{cesTopOnly=e.target.checked;refreshCESStyle();});
 document.getElementById('show-approx').addEventListener('change',e=>{
   showApprox=e.target.checked;
   ['legend-precise-item','legend-approx-item'].forEach(id=>document.getElementById(id).style.display=showApprox?'':'none');
