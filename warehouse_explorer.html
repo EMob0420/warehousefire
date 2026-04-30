@@ -190,6 +190,10 @@ td{padding:.45rem .6rem;color:var(--text2)}
 #spike-ctrl{position:absolute;top:10px;left:10px;z-index:20;display:flex;flex-direction:column;gap:4px;pointer-events:auto}
 .spike-btn{width:32px;height:32px;background:rgba(9,9,11,.85);color:#fafafa;border:1px solid #3f3f46;border-radius:4px;font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:'Space Mono',monospace;transition:background .12s,border-color .12s}
 .spike-btn:hover{background:#27272a;border-color:#71717a}
+#ces-legend{position:absolute;bottom:30px;right:10px;z-index:900;background:rgba(9,9,11,.88);border:1px solid #3f3f46;border-radius:6px;padding:.5rem .65rem;font-size:.67rem;color:#e4e4e7;display:none;pointer-events:none;min-width:140px}
+#ces-legend .ces-title{font-weight:600;margin-bottom:.3rem;color:#fafafa;font-size:.7rem;letter-spacing:.01em}
+#ces-legend .ces-row{display:flex;align-items:center;gap:.35rem;line-height:1.65}
+#ces-legend .ces-sw{width:13px;height:9px;flex-shrink:0;border-radius:1px}
 footer{text-align:center;padding:1.5rem 0 1rem;color:var(--text3);font-size:.8rem;border-top:1px solid var(--border);margin-top:2rem}
 footer a{color:#ebe599;text-decoration:none}
 /* ── ABOUT TAB ── */
@@ -324,7 +328,21 @@ footer a{color:#ebe599;text-decoration:none}
 <!-- MAP ROW -->
 <div class="map-row">
   <!-- MAP -->
-  <div class="map-wrap"><div id="map"></div><div id="deck-container"></div><button id="spike-toggle" class="base-toggle-btn">3D Spikes</button></div>
+  <div class="map-wrap"><div id="map"></div><div id="deck-container"></div><button id="spike-toggle" class="base-toggle-btn">3D Spikes</button>
+  <div id="ces-legend">
+    <div class="ces-title">CES 4.0 Percentile</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#c8312e"></div>90–100 (highest burden)</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#f06b3e"></div>80–90</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#ff9f4d"></div>70–80</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#ffd97d"></div>60–70</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#fff5b3"></div>50–60</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#d9e88c"></div>40–50</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#b3d56e"></div>30–40</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#8cbf52"></div>20–30</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#6ba03e"></div>10–20</div>
+    <div class="ces-row"><div class="ces-sw" style="background:#4a7c2a"></div>0–10 (lowest burden)</div>
+  </div>
+  </div>
 
   <!-- SIDEBAR -->
   <div class="map-sidebar">
@@ -423,6 +441,14 @@ footer a{color:#ebe599;text-decoration:none}
       <label style="display:flex;align-items:flex-start;gap:.5rem;cursor:pointer">
         <input type="checkbox" id="show-wh-polygons" style="margin-top:.18rem;flex-shrink:0">
         <span style="font-size:.76rem;color:var(--text2);line-height:1.4">Show current warehouses</span>
+      </label>
+    </div>
+
+    <!-- CES 4.0 overlay -->
+    <div class="sb-section">
+      <label style="display:flex;align-items:flex-start;gap:.5rem;cursor:pointer">
+        <input type="checkbox" id="show-ces" style="margin-top:.18rem;flex-shrink:0">
+        <span style="font-size:.76rem;color:var(--text2);line-height:1.4">Show environmental burden (CES 4.0)</span>
       </label>
     </div>
 
@@ -721,6 +747,10 @@ function filterData(){
 // ============== MAP ==============
 const map=L.map('map',{center:[33.95,-117.75],zoom:9,zoomControl:true});
 
+// Custom pane: CES tracts sit above tile but below markers
+map.createPane('cesPane');
+map.getPane('cesPane').style.zIndex=350;
+
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri, Maxar, GeoEye, USGS',maxZoom:19}).addTo(map);
 
 let whPolyLayer=null,whPolyLoaded=false;
@@ -741,6 +771,51 @@ function setWhPolyLayer(visible){
   }
 }
 document.getElementById('show-wh-polygons').addEventListener('change',e=>setWhPolyLayer(e.target.checked));
+
+// ── CalEnviroScreen 4.0 layer ──
+function cesColor(p){
+  if(p===null||p===undefined)return'#555';
+  const c=['#4a7c2a','#6ba03e','#8cbf52','#b3d56e','#d9e88c','#fff5b3','#ffd97d','#ff9f4d','#f06b3e','#c8312e'];
+  return c[Math.min(9,Math.floor(p/10))];
+}
+let cesLayer=null,cesLoaded=false;
+function setCESLayer(on){
+  if(on&&!cesLoaded){
+    cesLoaded=true;
+    fetch('/data/ces4_socal.geojson')
+      .then(r=>r.json())
+      .then(gj=>{
+        cesLayer=L.geoJSON(gj,{
+          pane:'cesPane',
+          style:f=>{
+            const p=f.properties.CIscoreP;
+            return{fillColor:cesColor(p),fillOpacity:p!=null?.55:0,color:'#000',weight:0.2,opacity:0.35};
+          },
+          onEachFeature:(f,layer)=>{
+            const p=f.properties;
+            const score=p.CIscoreP!=null?p.CIscoreP.toFixed(1)+'th percentile':'No data';
+            const col=cesColor(p.CIscoreP);
+            layer.bindPopup(
+              `<div style="font-family:'DM Sans',sans-serif;min-width:155px">
+                <div style="font-weight:700;font-size:.8rem;color:#e4e4e7;margin-bottom:.25rem">CalEnviroScreen 4.0</div>
+                <div style="font-size:1.05rem;font-weight:700;color:${col}">${score}</div>
+                <div style="font-size:.75rem;color:#a1a1aa;margin-top:.2rem">${p.county} County</div>
+                <div style="font-size:.7rem;color:#71717a">Tract ${p.TractTXT}</div>
+                <hr style="border:none;border-top:1px solid #3f3f46;margin:.3rem 0">
+                <div style="font-size:.63rem;color:#52525b">Source: OEHHA CalEnviroScreen 4.0 (Oct 2021)</div>
+              </div>`,
+              {className:'cause-tooltip'}
+            );
+          }
+        }).addTo(map);
+      })
+      .catch(e=>console.error('[CES4]',e));
+  } else if(cesLayer){
+    on?cesLayer.addTo(map):map.removeLayer(cesLayer);
+  }
+  document.getElementById('ces-legend').style.display=on?'block':'none';
+}
+document.getElementById('show-ces').addEventListener('change',e=>setCESLayer(e.target.checked));
 document.getElementById('show-approx').addEventListener('change',e=>{
   showApprox=e.target.checked;
   ['legend-precise-item','legend-approx-item'].forEach(id=>document.getElementById(id).style.display=showApprox?'':'none');
