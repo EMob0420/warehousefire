@@ -176,6 +176,16 @@ td{padding:.45rem .6rem;color:var(--text2)}
 .marker-cluster div,.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:transparent!important;border:none!important;box-shadow:none!important}
 .cause-tooltip{background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:8px!important;padding:0!important;box-shadow:0 6px 24px rgba(0,0,0,.5)!important}
 .cause-tooltip::before{display:none!important}
+.cause-total{margin:.4rem 0 .5rem;line-height:1}
+.cause-total-num{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:#ebe599}
+.cause-total-label{display:block;font-size:.67rem;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-top:.15rem}
+.cause-drill{font-size:.78rem;color:var(--text2);margin:.35rem 0 .5rem;padding:.35rem .6rem;background:rgba(235,229,153,.07);border-left:2px solid #ebe599;border-radius:0 4px 4px 0;line-height:1.5}
+.cause-legend{margin-top:.6rem;display:flex;flex-direction:column;gap:.1rem}
+.cause-legend-row{display:flex;align-items:center;gap:.5rem;padding:.22rem .3rem;border-radius:4px;cursor:pointer;transition:background .12s}
+.cause-legend-row:hover,.cause-legend-row.active{background:rgba(255,255,255,.05)}
+.cause-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;transition:opacity .12s}
+.cause-legend-name{flex:1;font-size:.77rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.cause-legend-stat{font-family:'Space Mono',monospace;font-size:.71rem;color:var(--text3);white-space:nowrap;text-align:right;flex-shrink:0}
 .ctip{min-width:170px;padding:8px 10px;font-family:'Sora',sans-serif}
 .ctip-total{font-weight:700;font-size:.85rem;margin-bottom:.45rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.3rem}
 .ctip-row{display:flex;align-items:center;gap:.4rem;font-size:.75rem;margin-bottom:.2rem}
@@ -514,7 +524,17 @@ footer a{color:#ebe599;text-decoration:none}
     <div class="chart-wrap"><canvas id="ch-year"></canvas></div>
     <div id="sqft-note" style="font-size:.75rem;color:var(--text3);margin-top:.5rem;text-align:right"></div>
   </div>
-  <div class="card"><h2>How Fires Started</h2><div class="sub">Cause of ignition — why it happened</div><div class="chart-wrap"><canvas id="ch-cause"></canvas></div></div>
+  <div class="card">
+    <h2>How Fires Started</h2>
+    <div class="sub">Cause of ignition — why it happened</div>
+    <div class="cause-total">
+      <span class="cause-total-num" id="cause-total-num">—</span>
+      <span class="cause-total-label">fires with known cause</span>
+    </div>
+    <div class="cause-drill" id="cause-drill" style="display:none"></div>
+    <div class="chart-wrap" style="height:190px"><canvas id="ch-cause"></canvas></div>
+    <div class="cause-legend" id="cause-legend"></div>
+  </div>
   <div class="card"><h2>Heat Source</h2><div class="sub" id="heat-sub">What physically ignited the fire</div><div class="chart-wrap"><canvas id="ch-heat"></canvas></div></div>
   <div class="card"><h2>By County</h2><div class="sub">Total incidents per county</div><div class="chart-wrap"><canvas id="ch-county"></canvas></div></div>
   <div class="card"><h2>Top Cities</h2><div class="sub">Most warehouse fire incidents</div><div class="chart-wrap"><canvas id="ch-city"></canvas></div></div>
@@ -1056,7 +1076,7 @@ const HEAT_LABELS={
   '81':'Heat from direct flame','82':'Radiated heat','83':'Conducted heat',
   '84':'Convected heat','97':'Multiple heat sources'
 };
-function _causeReset(){selectedCause=null;_applyCauseColors();_setHeatLabel();_updateHeatOnly(filterData());}
+function _causeReset(){selectedCause=null;_applyCauseColors();_setCauseDrill();_setHeatLabel();_updateHeatOnly(filterData());}
 function _applyCauseColors(){
   if(!charts.cause)return;
   const labels=charts.cause.data.labels;
@@ -1065,6 +1085,54 @@ function _applyCauseColors(){
     return(!selectedCause||l===selectedCause)?c:c+'44';
   });
   charts.cause.update('none');
+  _buildCauseLegend();
+}
+function _buildCauseLegend(){
+  const legend=document.getElementById('cause-legend');
+  if(!legend||!charts.cause)return;
+  const labels=charts.cause.data.labels;
+  const vals=charts.cause.data.datasets[0].data;
+  const total=vals.reduce((s,v)=>s+v,0);
+  legend.innerHTML='';
+  labels.forEach((lbl,i)=>{
+    const pct=total?Math.round(vals[i]/total*100):0;
+    const baseColor=_CAUSE_COLORS[i%_CAUSE_COLORS.length];
+    const dotColor=(!selectedCause||selectedCause===lbl)?baseColor:baseColor+'44';
+    const row=document.createElement('div');
+    row.className='cause-legend-row'+(selectedCause===lbl?' active':'');
+    const dot=document.createElement('div');
+    dot.className='cause-legend-dot';dot.style.background=dotColor;
+    const name=document.createElement('span');
+    name.className='cause-legend-name';name.textContent=lbl;
+    const stat=document.createElement('span');
+    stat.className='cause-legend-stat';stat.textContent=vals[i].toLocaleString()+' ('+pct+'%)';
+    row.appendChild(dot);row.appendChild(name);row.appendChild(stat);
+    row.addEventListener('click',()=>{
+      selectedCause=(selectedCause===lbl)?null:lbl;
+      _applyCauseColors();_setCauseDrill();_setHeatLabel();_updateHeatOnly(filterData());
+    });
+    row.addEventListener('mouseenter',()=>{
+      charts.cause.setActiveElements([{datasetIndex:0,index:i}]);
+      charts.cause.update('none');
+    });
+    row.addEventListener('mouseleave',()=>{
+      charts.cause.setActiveElements([]);
+      charts.cause.update('none');
+    });
+    legend.appendChild(row);
+  });
+}
+function _setCauseDrill(){
+  const drill=document.getElementById('cause-drill');
+  if(!drill||!charts.cause)return;
+  if(!selectedCause){drill.style.display='none';return;}
+  const vals=charts.cause.data.datasets[0].data;
+  const labels=charts.cause.data.labels;
+  const total=vals.reduce((s,v)=>s+v,0);
+  const idx=labels.indexOf(selectedCause);
+  const count=idx>=0?vals[idx]:0;
+  drill.innerHTML='Showing heat sources for <strong style="color:#ebe599">'+selectedCause+'</strong> — '+count.toLocaleString()+' of '+total.toLocaleString()+' fires';
+  drill.style.display='';
 }
 function _updateHeatOnly(data){
   if(!charts.heat)return;
@@ -1087,7 +1155,7 @@ function initCharts(){
   makeYearChart('sqft');
   charts.county=new Chart(document.getElementById('ch-county'),{type:'bar',data:{labels:counties.map(c=>c+' County'),datasets:[{data:[0,0,0,0],backgroundColor:counties.map(c=>cColors[c]),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{display:false}},y:{grid:{display:false}}}}});
   charts.city=new Chart(document.getElementById('ch-city'),{type:'bar',data:{labels:[],datasets:[{data:[],backgroundColor:'rgba(244,63,94,.6)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{display:false}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
-  charts.cause=new Chart(document.getElementById('ch-cause'),{type:'doughnut',data:{labels:[],datasets:[{data:[],backgroundColor:_CAUSE_COLORS.slice(),borderColor:'#18181b',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'45%',plugins:{legend:{position:'right',labels:{padding:8,font:{size:10},usePointStyle:true,pointStyle:'rectRounded',boxWidth:8}}},onClick:(evt,elements)=>{if(!elements.length)return;const label=charts.cause.data.labels[elements[0].index];selectedCause=(selectedCause===label)?null:label;_applyCauseColors();_setHeatLabel();_updateHeatOnly(filterData());},onHover:(evt,elements)=>{evt.native.target.style.cursor=elements.length?'pointer':'default';}}});
+  charts.cause=new Chart(document.getElementById('ch-cause'),{type:'doughnut',data:{labels:[],datasets:[{data:[],backgroundColor:_CAUSE_COLORS.slice(),borderColor:'#18181b',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'48%',plugins:{legend:{display:false},tooltip:{callbacks:{title:()=>'',label:ctx=>{const total=ctx.chart.data.datasets[0].data.reduce((s,v)=>s+v,0);const pct=total?Math.round(ctx.parsed/total*100):0;return ' '+ctx.label+': '+ctx.parsed.toLocaleString()+' fires ('+pct+'%)';}}}},onClick:(evt,elements)=>{if(!elements.length)return;const label=charts.cause.data.labels[elements[0].index];selectedCause=(selectedCause===label)?null:label;_applyCauseColors();_setCauseDrill();_setHeatLabel();_updateHeatOnly(filterData());},onHover:(evt,elements)=>{evt.native.target.style.cursor=elements.length?'pointer':'default';}}});
   charts.heat=new Chart(document.getElementById('ch-heat'),{type:'bar',data:{labels:[],datasets:[{data:[],backgroundColor:'rgba(251,146,60,.6)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{display:false},ticks:{stepSize:1,callback:v=>Number.isInteger(v)?v:null}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
 }
 let mainChartView='sqft';
@@ -1115,7 +1183,10 @@ function updateCharts(data){
   const causeTop=Object.entries(causeCounts).sort((a,b)=>b[1]-a[1]);
   if(selectedCause&&!causeTop.find(c=>c[0]===selectedCause)){selectedCause=null;_setHeatLabel();}
   charts.cause.data.labels=causeTop.map(c=>c[0]);charts.cause.data.datasets[0].data=causeTop.map(c=>c[1]);
+  const causeTotal=causeTop.reduce((s,c)=>s+c[1],0);
+  document.getElementById('cause-total-num').textContent=causeTotal.toLocaleString();
   _applyCauseColors();
+  _setCauseDrill();
   // Heat source chart (respects selectedCause drill-down)
   _updateHeatOnly(data);
 }
